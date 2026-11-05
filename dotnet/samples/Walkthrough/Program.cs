@@ -5,8 +5,10 @@
 //
 //   dotnet run --project samples/Walkthrough -- walkthrough
 //       With the client id Interact gave you, goes through a whole integration:
-//       checks your token, creates a tenant, signs in a user and acts as them.
-//       Reads INTERACT_BASE_URL, INTERACT_CLIENT_ID and INTERACT_KEY_FILE.
+//       checks your token, creates a tenant, signs in a user and acts as them,
+//       then checks a server list, fixes it, creates a simulation, runs it and
+//       reads the results. Reads INTERACT_BASE_URL, INTERACT_CLIENT_ID and
+//       INTERACT_KEY_FILE. The run spends one of the tenant's credits.
 
 using Interact.PartnerApi;
 
@@ -67,9 +69,112 @@ static async Task<int> Walkthrough()
         var me = await client.GetMeAsync(user);
         Console.WriteLine($"   {me.Subject} ({me.Role}) in {me.Tenant}: scopes {string.Join(" ", me.Scopes)}, {me.CreditBalance} credits");
 
+        Step(5, "Look up hardware in the catalogue, as your pickers would");
+        // An estate of PowerEdge R640s, compared against the R660 with a newer CPU.
+        var source = await Find(client.SearchServersAsync("PowerEdge R640"), s => s.Model, "PowerEdge R640");
+        var target = await Find(client.SearchServersAsync("PowerEdge R660"), s => s.Model, "PowerEdge R660");
+        var sourceCpu = await Find(client.SearchCpusAsync("Gold 6230R"), c => c.Name, "Intel Xeon Gold 6230R");
+        var targetCpu = await Find(client.SearchCpusAsync("Gold 6448Y"), c => c.Name, "Intel Xeon Gold 6448Y");
+        if (source is null || target is null || sourceCpu is null || targetCpu is null)
+        {
+            Console.Error.WriteLine("   The catalogue doesn't have the hardware this walkthrough uses.");
+            return 1;
+        }
+        Console.WriteLine($"   Estate: {source.Vendor} {source.Model} with {sourceCpu.Name}");
+        Console.WriteLine($"   Target: {target.Vendor} {target.Model} with {targetCpu.Name}");
+
+        Step(6, "Check your customer's server list");
+        // As a customer's list has it: one server named exactly, one written their own way,
+        // one we won't know.
+        List<ServerLine> estate =
+        [
+            new("rack-1", source.Vendor, source.Model, sourceCpu.Name, CpuCount: 2, MemoryGb: 256, Quantity: 10),
+            new("rack-2", source.Vendor.ToLowerInvariant(), Abbreviate(source.Model), "Gold 6230R", CpuCount: 2,
+                MemoryGb: 512, Quantity: 4),
+            new("rack-3", "Acme", "Toaster 3000", CpuCount: 1, MemoryGb: 64, Quantity: 2),
+        ];
+        var check = await client.CheckServersAsync(estate.Select(s => new MatchRow(s.Vendor, s.Model, s.Cpu, s.Gpu, s.Ref)).ToList());
+        foreach (var result in check.Results) Console.WriteLine($"   {result.Ref}: {Describe(result)}");
+
+        Step(7, "Fix the list: settle each server, or take it out");
+        // Your user would choose here: the suggestion, an alternative, or a server from the
+        // catalogue pickers. This takes the suggestion, and leaves out what we don't know.
+        List<ServerLine> settled = [];
+        foreach (var (server, result) in estate.Zip(check.Results))
+        {
+            switch (result.Status)
+            {
+                case "matched":
+                    settled.Add(server);
+                    Console.WriteLine($"   {server.Ref}: kept, matched as sent");
+                    break;
+                case "needs_review":
+                    var chosen = result.Server!;
+                    settled.Add(server with { Match = new ServerMatch(chosen.Vendor, chosen.Model, chosen.Cpu ?? server.Cpu) });
+                    Console.WriteLine($"   {server.Ref}: settled as {chosen.Vendor} {chosen.Model}");
+                    break;
+                default:
+                    Console.WriteLine($"   {server.Ref}: taken out, not in the catalogue");
+                    break;
+            }
+        }
+
+        Step(8, "Create the simulation, with a target to compare against");
+        var targets = new[] { new TargetLine("target-1", target.Vendor, target.Model, targetCpu.Name, CpuCount: 2, MemoryGb: 512) };
+        try
+        {
+            // Sent as it was, unfixed: refused, naming each server that isn't settled.
+            await client.CreateSimulationAsync(user, new SimulationRequest("estate_refresh", "Unfixed list", estate, targets));
+        }
+        catch (PartnerApiException refused) when (refused.Code == "servers_unresolved")
+        {
+            Console.WriteLine("   The list as it came was refused, and nothing was created:");
+            foreach (var server in refused.Unresolved) Console.WriteLine($"     {server.Ref}: {server.Status}");
+        }
+        var simulation = await client.CreateSimulationAsync(user, new SimulationRequest(
+            "estate_refresh", "Sample estate refresh", settled, targets));
+        Console.WriteLine($"   Created {simulation.Id}: {simulation.Status}, {simulation.Servers.Matched} servers matched");
+
+        Step(9, "Run it, waiting for the result");
+        var run = await client.StartRunAsync(user, simulation.Id, waitSeconds: 10);
+        if (!run.Finished)
+        {
+            Console.WriteLine($"   Still {run.Status} after 10 seconds; following it...");
+            run = await client.WaitForRunAsync(user, simulation.Id, run.Version);
+        }
+        Console.WriteLine($"   Run {run.Version}: {run.Status}, {run.CreditsUsed} credit(s)");
+        if (run.Results is null)
+        {
+            Console.Error.WriteLine($"   No results: {run.Error}");
+            return 1;
+        }
+
+        Step(10, "Read the results");
+        var results = run.Results;
+        Console.WriteLine($"   The estate: {results.Estate.Servers} servers");
+        foreach (var excluded in results.Estate.Excluded) Console.WriteLine($"   Left out: {excluded.Ref} ({excluded.Reason})");
+        foreach (var t in results.Targets)
+        {
+            if (t.Status != "completed")
+            {
+                Console.WriteLine($"   {t.Ref}: {t.Status}, {t.Error}");
+                continue;
+            }
+            Console.WriteLine($"   {t.Ref} ({t.Vendor} {t.Model}): {t.Servers.Current} servers become {t.Servers.New}");
+            Console.WriteLine($"     energy {t.EnergyKwhPerYear.Current:N0} -> {t.EnergyKwhPerYear.New:N0} kWh a year, " +
+                              $"{t.ReductionsPct?.Energy}% less; carbon {t.CarbonKgPerYear.New:N0} kg a year, " +
+                              $"{t.ReductionsPct?.Carbon}% less");
+        }
+
         Console.WriteLine();
         Console.WriteLine("Done. Every call above is in Interact's API activity, under your client id.");
         return 0;
+    }
+    catch (PartnerApiException error) when (error.Code == "insufficient_credits")
+    {
+        Console.Error.WriteLine($"The tenant has {error.CreditsAvailable} credits and a run needs {error.CreditsNeeded}. " +
+                                "Ask Interact to add some to the tenant, then run this again.");
+        return 1;
     }
     catch (PartnerApiException error)
     {
@@ -91,6 +196,21 @@ static string? Setting(string name)
 }
 
 static void Step(int number, string what) => Console.WriteLine($"\n{number}. {what}");
+
+// The first of a search's results named exactly `name`, or null.
+static async Task<T?> Find<T>(Task<Page<T>> search, Func<T, string> nameOf, string name) where T : class =>
+    (await search).Items.FirstOrDefault(item => string.Equals(nameOf(item), name, StringComparison.OrdinalIgnoreCase));
+
+// "PowerEdge R640" as a customer might write it: "R640".
+static string Abbreviate(string model) => model.Contains(' ') ? model[(model.LastIndexOf(' ') + 1)..] : model + "x";
+
+static string Describe(MatchResult result) => result.Status switch
+{
+    "matched" => $"matched {result.Server!.Vendor} {result.Server.Model}",
+    "needs_review" => $"needs review: perhaps {result.Server!.Vendor} {result.Server.Model}" +
+                      (result.Alternatives.Count > 0 ? $", or {string.Join(", ", result.Alternatives.Take(2).Select(a => a.Model))}" : ""),
+    _ => "unmatched: not in the catalogue",
+};
 
 static int Usage()
 {
