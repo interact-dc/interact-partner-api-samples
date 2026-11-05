@@ -107,7 +107,8 @@ How you present these is up to you.
 
 ## Credits, limits and errors
 
-- **Credits:** each tenant has its own balance, which we set and top up. You can read balances and monthly usage through the API. A run that needs more credits than the tenant has is refused with a clear error.
+- **Credits:** each tenant has its own balance, which we set and top up. You can read balances and monthly usage through the API. A run that needs more credits than the tenant has is refused with a clear error. You choose when a tenant counts as running low (`credit_alert_threshold` on the tenant), and our `credits.low` webhook tells you when it gets there, so you can ask us for more before a run is refused.
+- **Run limits:** each tenant can have 10 runs going at once and start 2,000 a day (UTC), and your tenants together can have 50 going at once. We can agree different limits with you. Past one, starting a run is refused with a 429 (`too_many_runs` or `daily_run_limit`) that says the limit and how long to wait.
 - **Rate limits:** per minute, 1,200 calls for your system, 600 per tenant and 120 per user, the same for every partner. Every response says how much is left; past a limit you get a 429 with how long to wait.
 - **Errors:** every error has the same standard shape (RFC 9457) with a stable `code` your app can act on, and a message for people.
 - **Support:** every response carries a request id. Quote it to us and we can see exactly what happened to that call, including why a token request was refused.
@@ -131,5 +132,5 @@ The API reference, as ReDoc or Swagger UI, is live for the staging sandbox at [p
 | Staging sandbox | Built |
 | Hardware catalogue and matching | Built |
 | Simulations, runs and results | Built |
-| Webhooks for finished runs | Built |
+| Webhooks for finished runs and low credits | Built |
 | EU compliance labels | Coming |

@@ -112,6 +112,12 @@ var received = verifier.Verify(Request.Headers["webhook-id"], Request.Headers["w
 if (received.Type == "run.completed") { /* read the run at received.Data.GetProperty("path") */ }
 ```
 
+The events: `run.completed`, `run.failed` and `run.paused` for a tenant's
+runs, and `credits.low` when spending takes a tenant's balance to its alert
+threshold or below (`balance` and `alert_threshold` in the event; once, until
+it is topped up above it). Set the threshold with the tenant:
+`PUT /v1/tenants/{tenant}` with `credit_alert_threshold` (50 unless you do).
+
 Answer with any 2xx within 10 seconds, and de-duplicate on the event id: a
 delivery can arrive more than once. `ListWebhookDeliveriesAsync` shows what
 your address answered to each.

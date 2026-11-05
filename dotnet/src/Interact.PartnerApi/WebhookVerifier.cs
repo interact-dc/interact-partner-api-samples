@@ -6,7 +6,7 @@ namespace Interact.PartnerApi;
 
 /// <summary>An event Interact sent your webhook address.</summary>
 /// <param name="Id">The <c>webhook-id</c>: the same on every retry. De-duplicate on it.</param>
-/// <param name="Type"><c>run.completed</c>, <c>run.failed</c>, <c>run.paused</c> or <c>ping</c>.</param>
+/// <param name="Type"><c>run.completed</c>, <c>run.failed</c>, <c>run.paused</c>, <c>credits.low</c> or <c>ping</c>.</param>
 /// <param name="Data">What happened, and where to read it (<c>path</c>, under the API).</param>
 public sealed record WebhookEvent(string Id, string Type, DateTimeOffset Timestamp, JsonElement Data);
 
