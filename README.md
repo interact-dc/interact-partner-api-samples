@@ -9,6 +9,12 @@ Everything here runs against our staging sandbox,
 `https://partners-staging.interactdc.com`, until you go live on
 `https://partners.interactdc.com`.
 
+## Documentation
+
+Start with [docs/README.md](docs/README.md): how the integration works, how
+your account is set up and what we need from you, and the checks to run on
+staging.
+
 ## .NET (C#)
 
 Needs the [.NET 10 SDK](https://dotnet.microsoft.com/download). Everything
