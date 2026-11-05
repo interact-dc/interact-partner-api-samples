@@ -127,3 +127,18 @@ public sealed record Reductions(double? Servers, double? Energy, double? Carbon,
 public sealed record TargetResult(
     string? Ref, string? Vendor, string? Model, string Status, string? Error, CurrentAndNew Servers,
     CurrentAndNew EnergyKwhPerYear, NewValue CarbonKgPerYear, Reductions? ReductionsPct);
+
+// --- Webhooks ------------------------------------------------------------------------
+
+public sealed record WebhookAddress(string Url);
+
+public sealed record WebhookSettings(string? Url, bool HasSecret, IReadOnlyList<string> Events);
+
+public sealed record WebhookSecret(string Secret);
+
+public sealed record WebhookTest(string EventId);
+
+/// <summary>One event to your address. <see cref="Status"/> is <c>pending</c>, <c>delivered</c> or <c>failed</c>.</summary>
+public sealed record WebhookDelivery(
+    string EventId, string Type, string Status, int Attempts, DateTimeOffset? NextAttemptAt, int? LastStatusCode,
+    string? LastError, DateTimeOffset CreatedAt, DateTimeOffset? DeliveredAt);

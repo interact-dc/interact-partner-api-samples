@@ -32,7 +32,6 @@ Never send us a private key. We only ever need the public half; anything else is
 | Staging public key | The public half of your staging key pair, as the web address where you publish it (preferred) or as a JWKS document | https://auth.yourcompany.com/.well-known/jwks.json | Yes |
 | Production public key | The same, for a separate production key pair | As above | Before going live |
 | IP ranges | The addresses your system calls us from, if you want calls from anywhere else refused | 203.0.113.0/24 | Optional |
-| Webhook address | Where we tell your system that a longer simulation run has finished | https://api.yourcompany.com/interact/webhooks | When webhooks are available |
 
 **Keys we accept:** ES256 (recommended), ES384, ES512, RS256 to RS512 and PS256 to PS512 with RSA keys of at least 2048 bits, and EdDSA. A key held in Azure Key Vault or a similar service works, as long as it can sign a JWT.
 
@@ -53,7 +52,7 @@ The production addresses go live when you do. Everything on staging is reached o
 
 ## What you can build and test now
 
-Everything is live on staging, simulations included, so you can build and prove your whole integration there. Work through these checks in order; each builds on the one before. The sample client's walkthrough does checks 1 to 6 and 11 to 13 for you, so running it first shows your key and client id work.
+Everything is live on staging, simulations included, so you can build and prove your whole integration there. Work through these checks in order; each builds on the one before. The sample client's walkthrough does checks 1 to 6 and 11 to 13 for you, and its `WebhookVerifier` checks 14 and 15's signatures, so running it first shows your key and client id work.
 
 | Check | Call | Passes when |
 | --- | --- | --- |
@@ -70,6 +69,8 @@ Everything is live on staging, simulations included, so you can build and prove 
 | 11. A list that isn't settled is refused | `POST /v1/tenants/{tenant}/simulations` with a server that needs review or is unmatched, and no `match` | 400 `servers_unresolved`, naming each server in `unresolved`; nothing is created |
 | 12. A settled list makes a simulation | The same, with each server's `match` from check 6, and a target | 201, status `ready` |
 | 13. You can run it and read the results | `POST .../simulations/{id}/runs` with `Prefer: wait=10`; if it answers 202, `GET` its `Location` | The run is `completed`, with each target's servers, energy, carbon and reductions |
+| 14. Your receiver gets webhooks | `PUT /v1/webhooks` with your https address, `POST /v1/webhooks/secret`, then `POST /v1/webhooks/test` | Your receiver verifies a `ping`, answers 2xx, and `GET /v1/webhooks/deliveries` shows it `delivered` |
+| 15. A finished run tells you | Run a simulation as in check 13, without waiting | Your receiver gets `run.completed`, verifies it, and reads the run at its `path` |
 
 Checks 6, 11 and 12 are how every simulation starts. Your users build the server list, you check it, and they settle each server (the suggestion, an alternative, or one from the catalogue pickers) or take it out. Then you send it with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results. A run spends the tenant's credits, one per target: we add credits to your test tenant.
 
@@ -87,7 +88,9 @@ Checks 6, 11 and 12 are how every simulation starts. Your users build the server
 
 **Errors.** Every error is `application/problem+json` with a stable `code` to act on and a `request_id` to send us. Token errors follow OAuth: `invalid_client` means we couldn't verify your request, `invalid_grant` means we couldn't verify the user's statement.
 
-**Not yet available:** webhooks to tell your system a run has finished (until then, read the run), and EU compliance reports. We will tell you as each reaches staging; nothing in checks 1 to 13 changes when they do.
+**Webhooks.** You set them up yourself, with your system's token: the address (`PUT /v1/webhooks`) and the signing secret (`POST /v1/webhooks/secret`), which is shown to you once. We never see it. Each event is signed per the [Standard Webhooks](https://www.standardwebhooks.com/) specification, so verify it with their libraries or the sample's `WebhookVerifier`. Events are delivered at least once: de-duplicate on `webhook-id`. Answer with any 2xx within 10 seconds. Anything else is tried again for about a day, and `GET /v1/webhooks/deliveries` shows what your address answered.
+
+**Not yet available:** EU compliance reports. We will tell you when they reach staging; nothing in checks 1 to 15 changes when they do.
 
 ## Looking after your keys
 

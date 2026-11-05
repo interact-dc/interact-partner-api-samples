@@ -119,6 +119,26 @@ public sealed class PartnerApiClient
         }
     }
 
+    /// <summary>Where your webhooks go, and whether a secret has been made.</summary>
+    public Task<WebhookSettings> GetWebhookAsync(CancellationToken ct = default) =>
+        SendAsync<WebhookSettings>(HttpMethod.Get, "webhooks", ct: ct);
+
+    /// <summary>Set where your webhooks go: a public https address. Empty sends none.</summary>
+    public Task<WebhookSettings> SetWebhookAsync(string url, CancellationToken ct = default) =>
+        SendAsync<WebhookSettings>(HttpMethod.Put, "webhooks", new WebhookAddress(url), ct: ct);
+
+    /// <summary>A new signing secret, replacing any you had. Shown this once: keep it in your key vault.</summary>
+    public async Task<string> MakeWebhookSecretAsync(CancellationToken ct = default) =>
+        (await SendAsync<WebhookSecret>(HttpMethod.Post, "webhooks/secret", ct: ct)).Secret;
+
+    /// <summary>Send a <c>ping</c> event to your address. Returns its event id.</summary>
+    public async Task<string> TestWebhookAsync(CancellationToken ct = default) =>
+        (await SendAsync<WebhookTest>(HttpMethod.Post, "webhooks/test", ct: ct)).EventId;
+
+    /// <summary>Your events, newest first, with what your address answered.</summary>
+    public Task<Page<WebhookDelivery>> ListWebhookDeliveriesAsync(CancellationToken ct = default) =>
+        SendAsync<Page<WebhookDelivery>>(HttpMethod.Get, "webhooks/deliveries", ct: ct);
+
     /// <summary>
     /// Any call to the API: <paramref name="path"/> is relative to <c>/v1/</c>.
     /// Pass <paramref name="user"/> to act as one of your users; leave it out to act as your system.

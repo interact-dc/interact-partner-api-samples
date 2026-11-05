@@ -95,6 +95,27 @@ if (!run.Finished) run = await api.WaitForRunAsync(user, simulation.Id, run.Vers
 var credits = await api.SendAsync<System.Text.Json.JsonElement>(HttpMethod.Get, "tenants/contoso/credits");
 ```
 
+### Receiving webhooks
+
+Set your address and make a secret once, with your system's token, then
+verify every event before acting on it, against the raw body as it arrived:
+
+```csharp
+await api.SetWebhookAsync("https://api.yourcompany.com/interact/webhooks");
+var secret = await api.MakeWebhookSecretAsync();  // shown once: keep it in your key vault
+await api.TestWebhookAsync();                     // a ping to your receiver
+
+// In your receiver:
+var verifier = new WebhookVerifier(secret);
+var received = verifier.Verify(Request.Headers["webhook-id"], Request.Headers["webhook-timestamp"],
+                               Request.Headers["webhook-signature"], rawBody);
+if (received.Type == "run.completed") { /* read the run at received.Data.GetProperty("path") */ }
+```
+
+Answer with any 2xx within 10 seconds, and de-duplicate on the event id: a
+delivery can arrive more than once. `ListWebhookDeliveriesAsync` shows what
+your address answered to each.
+
 ### How a simulation fits together
 
 - **Check, fix, check again.** `CheckServersAsync` (`POST /v1/catalogue/match`)

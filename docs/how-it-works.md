@@ -21,7 +21,7 @@ flowchart LR
     app -- calls as the user --> api
 ```
 
-Your users sign in with you and only ever use your app. Your backend proves who it is with its own key, then calls the API as each user to set up and run their simulations. Runs are asynchronous, but most finish within a second or two, so the result usually comes back in the same call. For a run that takes longer, your backend reads it again until it has finished; a webhook to tell it is coming.
+Your users sign in with you and only ever use your app. Your backend proves who it is with its own key, then calls the API as each user to set up and run their simulations. Runs are asynchronous, but most finish within a second or two, so the result usually comes back in the same call. For a run that takes longer, a webhook tells your backend when it has finished.
 
 ## Who does what
 
@@ -94,7 +94,7 @@ A compliance report rates one data centre against the EU Energy Efficiency Direc
 
 **Why matching comes first.** We can only model hardware we know, so every current server is matched to our catalogue before a simulation is created. First you check the list: we say how each server matched, with alternatives for any we are unsure of. Your app then lets the user settle each one or take it out, as often as they need. Then you send the list with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results.
 
-**Running it.** We check the simulation is ready (at least one matched server, its targets, enough credits), take the credits and run it. Ask us to wait (the standard `Prefer: wait=10` header) and the finished run comes back in the same call. If it takes longer, the reply says it is still running: read the run again until it has finished (a webhook to tell you is coming). Every run is kept, so users can come back to their results, or change the settings and run again.
+**Running it.** We check the simulation is ready (at least one matched server, its targets, enough credits), take the credits and run it. Ask us to wait (the standard `Prefer: wait=10` header) and the finished run comes back in the same call. If it takes longer, the reply says it is still running: our webhook tells you when it has finished, or read the run again. Every run is kept, so users can come back to their results, or change the settings and run again.
 
 ## Choosing hardware
 
@@ -131,5 +131,5 @@ The API reference, as ReDoc or Swagger UI, is live for the staging sandbox at [p
 | Staging sandbox | Built |
 | Hardware catalogue and matching | Built |
 | Simulations, runs and results | Built |
-| Webhooks for finished runs | Coming |
+| Webhooks for finished runs | Built |
 | EU compliance labels | Coming |
