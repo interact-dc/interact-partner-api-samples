@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Walkthrough/Walkthrough.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Interact.PartnerApi/Interact.PartnerApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Interact.PartnerApi.Tests/Interact.PartnerApi.Tests.csproj" />
+  </Folder>
+</Solution>

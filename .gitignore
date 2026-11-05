@@ -1,0 +1,11 @@
+# .NET build output
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Never commit a private key
+*.pem
+*.key
+*.pfx
