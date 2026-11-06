@@ -71,11 +71,13 @@ public sealed record ServerMatch(string Vendor, string Model, string? Cpu = null
 
 /// <summary>
 /// A server in your customer's estate. Send it with its <see cref="Match"/>, or without one
-/// if it matched outright when you checked the list.
+/// if it matched outright when you checked the list. <see cref="Utilisation"/> is its own measured
+/// average utilisation, as a fraction (0.45 is 45%); without one it uses the simulation's.
 /// </summary>
 public sealed record ServerLine(
     string Ref, string Vendor, string Model, string? Cpu = null, int? CpuCount = null, int? MemoryGb = null,
-    string? Gpu = null, int? GpuCount = null, int Quantity = 1, ServerMatch? Match = null);
+    string? Gpu = null, int? GpuCount = null, int Quantity = 1, ServerMatch? Match = null,
+    decimal? Utilisation = null);
 
 /// <summary>A server to compare the estate against: catalogue entries. Host-to-Host types need a quantity.</summary>
 public sealed record TargetLine(
@@ -114,9 +116,14 @@ public sealed record Estate(int? Servers, int? Lines, IReadOnlyList<ExcludedServ
 
 public sealed record ExcludedServer(string? Ref, int Servers, string Reason);
 
+/// <summary>
+/// What a run's figures assumed. Where some servers had their own utilisation,
+/// <see cref="ServersWithOwnUtilisation"/> says how many, the rest used <see cref="FacilityUtilisation"/>,
+/// and <see cref="ServerUtilisation"/> is their capacity-weighted utilisation, the workload each target was evaluated against.
+/// </summary>
 public sealed record RunAssumptions(
     double? ServerUtilisation, bool ServerUtilisationAssumed, double? Pue, bool PueAssumed, string Currency,
-    string? EnergyCostPerKwh);
+    string? EnergyCostPerKwh, double? FacilityUtilisation = null, int ServersWithOwnUtilisation = 0);
 
 public sealed record CurrentAndNew(double? Current, double? New);
 

@@ -48,13 +48,15 @@ public class SimulationTests : ClientTestBase
         Handler.Token("bob-token").Then(HttpStatusCode.Created, SimulationJson);
 
         var simulation = await Client().CreateSimulationAsync(Bob, new SimulationRequest("estate_refresh", "Leeds",
-            Servers: [new ServerLine("rack-1", "Dell", "R64O", Quantity: 4, Match: new ServerMatch("Dell", "PowerEdge R640"))]));
+            Servers: [new ServerLine("rack-1", "Dell", "R64O", Quantity: 4, Match: new ServerMatch("Dell", "PowerEdge R640"),
+                                     Utilisation: 0.45m)]));
 
         var sent = Handler.Sent[1];
         Assert.Equal(new Uri(BaseAddress, "v1/tenants/contoso/simulations"), sent.Uri);
         Assert.Equal("Bearer bob-token", sent.Headers["Authorization"]);
         var server = JsonDocument.Parse(sent.Body).RootElement.GetProperty("servers")[0];
         Assert.Equal("PowerEdge R640", server.GetProperty("match").GetProperty("model").GetString());
+        Assert.Equal(0.45m, server.GetProperty("utilisation").GetDecimal());
         Assert.False(server.TryGetProperty("gpu", out _));  // nothing sent for what isn't there
         Assert.Equal(("ready", 2), (simulation.Status, simulation.Servers.Matched));
         Assert.Equal(Id, simulation.Id);
@@ -91,8 +93,9 @@ public class RunTests : ClientTestBase
     private const string Completed = """
         {"version":1,"status":"completed","progress":null,"resume_after":null,"credits_used":1,"error":null,
          "results":{"estate":{"servers":10,"lines":1,"excluded":[]},
-                    "assumptions":{"server_utilisation":0.25,"server_utilisation_assumed":true,"pue":1.4,
-                                   "pue_assumed":true,"currency":"GBP","energy_cost_per_kwh":"0.1500"},
+                    "assumptions":{"server_utilisation":0.42,"server_utilisation_assumed":false,"pue":1.4,
+                                   "pue_assumed":true,"currency":"GBP","energy_cost_per_kwh":"0.1500",
+                                   "facility_utilisation":0.25,"servers_with_own_utilisation":4},
                     "targets":[{"ref":"t1","vendor":"Dell","model":"PowerEdge R660","status":"completed","error":null,
                                 "servers":{"current":10,"new":6},"energy_kwh_per_year":{"current":24835,"new":9934},
                                 "carbon_kg_per_year":{"new":2384},
@@ -114,6 +117,9 @@ public class RunTests : ClientTestBase
         Assert.True(run.Finished);
         var target = Assert.Single(run.Results!.Targets);
         Assert.Equal(("t1", 6.0, 60.0), (target.Ref, target.Servers.New, target.ReductionsPct!.Energy));
+        var assumptions = run.Results.Assumptions;
+        Assert.Equal((0.42, 0.25, 4), (assumptions.ServerUtilisation, assumptions.FacilityUtilisation,
+                                       assumptions.ServersWithOwnUtilisation));
     }
 
     [Fact]
