@@ -32,7 +32,7 @@ You build the screens your users see; we run the simulations, return the results
 | Your customers | Create a tenant for each one through the API | Set how many tenants you can have |
 | Your users | Sign them in, as you do today, and tell us who each one is | Create each user the first time we see them and keep their work theirs |
 | Your app | Build the screens: server lists, hardware choice, results | Check, run and store every simulation |
-| Credits | Read each tenant's balance and usage through the API | Set and top up each tenant's credits |
+| Credits | Give each tenant credits from your pool, take back what it hasn't spent, and read balances and usage through the API | Top up your credit pool, and invoice you |
 | Security | Keep your private key safe | Check every request against your public key |
 
 ## Your users
@@ -109,7 +109,7 @@ How you present these is up to you.
 
 ## Credits, limits and errors
 
-- **Credits:** each tenant has its own balance, which we set and top up. You can read balances and monthly usage through the API. A run that needs more credits than the tenant has is refused with a clear error. You choose when a tenant counts as running low (`credit_alert_threshold` on the tenant), and our `credits.low` webhook tells you when it gets there, so you can ask us for more before a run is refused.
+- **Credits:** you have a credit pool, which we top up and invoice you for. You give each tenant credits from it (`POST /v1/tenants/{tenant}/credits/allocate`, or `initial_credits` when you create the tenant), and take back what a tenant hasn't spent (`…/credits/reclaim`); offboarding a tenant returns its unspent credits to your pool. Runs spend the tenant's credits, and a run that needs more than the tenant has is refused with a clear error. You choose when a tenant counts as running low (`credit_alert_threshold` on the tenant), and our `credits.low` webhook tells you when it gets there. You also choose when your pool does (`PATCH /v1/credits`), and we send `credits.pool_low` and an email to your contact address, so you can ask us for more before you run out.
 - **Run limits:** each tenant can have 10 runs going at once and start 2,000 a day (UTC), and your tenants together can have 50 going at once. We can agree different limits with you. Past one, starting a run is refused with a 429 (`too_many_runs` or `daily_run_limit`) that says the limit and how long to wait.
 - **Rate limits:** per minute, 1,200 calls for your system, 600 per tenant and 120 per user, the same for every partner. Every response says how much is left; past a limit you get a 429 with how long to wait.
 - **Errors:** every error has the same standard shape (RFC 9457) with a stable `code` your app can act on, and a message for people.

@@ -6,8 +6,12 @@ namespace Interact.PartnerApi;
 // (https://partners-staging.interactdc.com/developers/) describes every field; you can
 // also generate these from its OpenAPI description.
 
-/// <summary>The body of <c>PUT /v1/tenants/{tenant_ref}</c>.</summary>
-public sealed record TenantRequest(string Name, IReadOnlyList<string> Modules, int? RetentionDays = null);
+/// <summary>
+/// The body of <c>PUT /v1/tenants/{tenant_ref}</c>. <see cref="InitialCredits"/> come from your pool
+/// when the tenant is created; they are ignored when it already exists.
+/// </summary>
+public sealed record TenantRequest(string Name, IReadOnlyList<string> Modules, int? RetentionDays = null,
+                                   int? InitialCredits = null);
 
 public sealed record TenantModules(IReadOnlyList<string> Requested, IReadOnlyList<string> Effective);
 
@@ -235,3 +239,29 @@ public sealed record Grid(
 public sealed record Label(
     LabelLocation Location, Graded Pue, Graded Wue, string? SchemeVersion, Efficiency Efficiency, Energy Energy,
     Carbon Carbon, Water Water, Grid Grid, IReadOnlyList<LabelServer> Servers);
+
+// --- Credits ----------------------------------------------------------------------
+
+/// <summary>
+/// Your credit pool: credits you have bought from Interact, to give your tenants. At or below
+/// <see cref="AlertThreshold"/> you are sent <c>credits.pool_low</c> and an email; 0 never.
+/// </summary>
+public sealed record CreditPool(int Balance, int AlertThreshold);
+
+/// <summary>
+/// One movement of your pool. <see cref="Type"/>: <c>top_up</c>, <c>adjustment</c>, <c>allocation</c>
+/// (given to <see cref="Tenant"/>), <c>reclaim</c> (taken back from it) or <c>offboard_return</c>.
+/// </summary>
+public sealed record PoolTransaction(string Type, int Amount, int BalanceAfter, string? Tenant, DateTimeOffset CreatedAt);
+
+/// <summary>Where credits stand after a move between your pool and a tenant.</summary>
+public sealed record CreditsMoved(string Tenant, int TenantBalance, int PoolBalance);
+
+public sealed record TenantCreditTransaction(string Type, int Amount, int BalanceAfter, DateTimeOffset CreatedAt);
+
+/// <summary>A tenant's credits: what its runs spend.</summary>
+public sealed record TenantCredits(int Balance, int AlertThreshold, IReadOnlyList<TenantCreditTransaction> Transactions);
+
+internal sealed record CreditAmount(int Amount);
+
+internal sealed record PoolThreshold(int AlertThreshold);

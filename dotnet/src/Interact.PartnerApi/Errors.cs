@@ -22,7 +22,10 @@ public sealed class PartnerApiException(int status, string code, string? detail,
     /// <summary>For <c>servers_unresolved</c>: each server that isn't settled, and what our matcher found for it.</summary>
     public IReadOnlyList<UnresolvedServer> Unresolved { get; } = unresolved ?? [];
 
-    /// <summary>For <c>insufficient_credits</c>: what a run needs, and what the tenant has.</summary>
+    /// <summary>
+    /// For <c>insufficient_credits</c>: what a run needs, and what the tenant has. For
+    /// <c>insufficient_pool_credits</c> and <c>insufficient_tenant_credits</c>: what your pool, or the tenant, has.
+    /// </summary>
     public int? CreditsNeeded { get; } = creditsNeeded;
     public int? CreditsAvailable { get; } = creditsAvailable;
 

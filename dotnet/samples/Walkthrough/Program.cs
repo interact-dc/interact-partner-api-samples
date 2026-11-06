@@ -5,10 +5,11 @@
 //
 //   dotnet run --project samples/Walkthrough -- walkthrough
 //       With the client id Interact gave you, goes through a whole integration:
-//       checks your token, creates a tenant, signs in a user and acts as them,
+//       checks your token, creates a tenant and gives it credits from your pool,
+//       signs in a user and acts as them,
 //       then checks a server list, fixes it, creates a simulation, runs it and
 //       reads the results. Reads INTERACT_BASE_URL, INTERACT_CLIENT_ID and
-//       INTERACT_KEY_FILE. The run spends one of the tenant's credits.
+//       INTERACT_KEY_FILE. The runs spend the tenant's credits.
 
 using Interact.PartnerApi;
 
@@ -69,16 +70,36 @@ static async Task<int> Walkthrough()
         }
         Console.WriteLine($"   {tenant.Name}: {tenant.Status}, can use {string.Join(", ", tenant.Modules.Effective)}");
 
-        Step(3, "List your tenants");
+        Step(3, "Give the tenant credits from your pool, as many as it is short of");
+        // The run below costs one credit, and the compliance run one more.
+        const int needed = 2;
+        var credits = await client.GetTenantCreditsAsync(tenantRef);
+        var pool = await client.GetCreditPoolAsync();
+        if (credits.Balance >= needed)
+        {
+            Console.WriteLine($"   It has {credits.Balance} credits already. Your pool holds {pool.Balance}.");
+        }
+        else if (pool.Balance >= needed - credits.Balance)
+        {
+            var moved = await client.AllocateTenantCreditsAsync(tenantRef, needed - credits.Balance);
+            Console.WriteLine($"   Gave {needed - credits.Balance}: it has {moved.TenantBalance}, your pool {moved.PoolBalance}.");
+        }
+        else
+        {
+            Console.Error.WriteLine($"   Your pool holds {pool.Balance} credits: ask Interact to top it up.");
+            return 1;
+        }
+
+        Step(4, "List your tenants");
         var page = await client.ListTenantsAsync();
         foreach (var t in page.Items) Console.WriteLine($"   {t.TenantRef}  {t.Name}");
 
-        Step(4, "Act as one of the customer's users, signed in by you");
+        Step(5, "Act as one of the customer's users, signed in by you");
         var user = new PartnerUser("sample-user-1", tenantRef, "member", Name: "Sample User");
         var me = await client.GetMeAsync(user);
         Console.WriteLine($"   {me.Subject} ({me.Role}) in {me.Tenant}: scopes {string.Join(" ", me.Scopes)}, {me.CreditBalance} credits");
 
-        Step(5, "Look up hardware in the catalogue, as your pickers would");
+        Step(6, "Look up hardware in the catalogue, as your pickers would");
         // An estate of PowerEdge R640s, compared against the R660 with a newer CPU.
         var source = await Find(client.SearchServersAsync("PowerEdge R640"), s => s.Model, "PowerEdge R640");
         var target = await Find(client.SearchServersAsync("PowerEdge R660"), s => s.Model, "PowerEdge R660");
@@ -92,7 +113,7 @@ static async Task<int> Walkthrough()
         Console.WriteLine($"   Estate: {source.Vendor} {source.Model} with {sourceCpu.Name}");
         Console.WriteLine($"   Target: {target.Vendor} {target.Model} with {targetCpu.Name}");
 
-        Step(6, "Check your customer's server list");
+        Step(7, "Check your customer's server list");
         // As a customer's list has it: one server named exactly, one written their own way,
         // one we won't know.
         List<ServerLine> estate =
@@ -105,7 +126,7 @@ static async Task<int> Walkthrough()
         var check = await client.CheckServersAsync(estate.Select(s => new MatchRow(s.Vendor, s.Model, s.Cpu, s.Gpu, s.Ref)).ToList());
         foreach (var result in check.Results) Console.WriteLine($"   {result.Ref}: {Describe(result)}");
 
-        Step(7, "Fix the list: settle each server, or take it out");
+        Step(8, "Fix the list: settle each server, or take it out");
         // Your user would choose here: the suggestion, an alternative, or a server from the
         // catalogue pickers. This takes the suggestion, and leaves out what we don't know.
         List<ServerLine> settled = [];
@@ -128,7 +149,7 @@ static async Task<int> Walkthrough()
             }
         }
 
-        Step(8, "Create the simulation, with a target to compare against");
+        Step(9, "Create the simulation, with a target to compare against");
         var targets = new[] { new TargetLine("target-1", target.Vendor, target.Model, targetCpu.Name, CpuCount: 2, MemoryGb: 512) };
         try
         {
@@ -144,7 +165,7 @@ static async Task<int> Walkthrough()
             "estate_refresh", "Sample estate refresh", settled, targets));
         Console.WriteLine($"   Created {simulation.Id}: {simulation.Status}, {simulation.Servers.Matched} servers matched");
 
-        Step(9, "Run it, waiting for the result");
+        Step(10, "Run it, waiting for the result");
         var run = await client.StartRunAsync(user, simulation.Id, waitSeconds: 10);
         if (!run.Finished)
         {
@@ -158,7 +179,7 @@ static async Task<int> Walkthrough()
             return 1;
         }
 
-        Step(10, "Read the results");
+        Step(11, "Read the results");
         var results = run.Results;
         Console.WriteLine($"   The estate: {results.Estate.Servers} servers");
         foreach (var excluded in results.Estate.Excluded) Console.WriteLine($"   Left out: {excluded.Ref} ({excluded.Reason})");
@@ -178,7 +199,7 @@ static async Task<int> Walkthrough()
         // The tenant must have the module, and your client the scope its users' tokens carry.
         if (tenant.Modules.Effective.Contains("compliance") && me.Scopes.Contains("compliance:write"))
         {
-            Step(11, "Create an EU compliance report for the data centre those servers are in");
+            Step(12, "Create an EU compliance report for the data centre those servers are in");
             // The same settled servers, with the facility's own figures. Shares are fractions.
             var dataCentre = new Facility("IE", Pue: 1.32m, Wue: 0.45m, NetworkingShare: 0.05m, StorageShare: 0.10m,
                                           ServerUtilisation: 0.30m);
@@ -192,7 +213,7 @@ static async Task<int> Walkthrough()
                 "Sample data centre label", dataCentre, servers));
             Console.WriteLine($"   Created {report.Id}: {report.Status}, {report.Servers.Matched} servers matched");
 
-            Step(12, "Run it, waiting for the label");
+            Step(13, "Run it, waiting for the label");
             var labelRun = await client.StartComplianceRunAsync(user, report.Id, waitSeconds: 10);
             if (!labelRun.Finished)
             {
@@ -201,7 +222,7 @@ static async Task<int> Walkthrough()
             }
             Console.WriteLine($"   Run {labelRun.Version}: {labelRun.Status}, {labelRun.CreditsUsed} credit(s)");
 
-            Step(13, "Read the label");
+            Step(14, "Read the label");
             if (labelRun.Results is not { } label)
             {
                 Console.Error.WriteLine($"   No label: {labelRun.Error}");

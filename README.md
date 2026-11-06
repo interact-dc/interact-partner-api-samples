@@ -99,8 +99,12 @@ var simulation = await api.CreateSimulationAsync(user, new SimulationRequest("es
 var run = await api.StartRunAsync(user, simulation.Id);  // waits up to 10 seconds
 if (!run.Finished) run = await api.WaitForRunAsync(user, simulation.Id, run.Version);
 
+// Credits from your pool to a tenant, and what it has now.
+var moved = await api.AllocateTenantCreditsAsync("contoso", 20);
+var credits = await api.GetTenantCreditsAsync("contoso");
+
 // Any other endpoint, by its path under /v1/.
-var credits = await api.SendAsync<System.Text.Json.JsonElement>(HttpMethod.Get, "tenants/contoso/credits");
+var usage = await api.SendAsync<System.Text.Json.JsonElement>(HttpMethod.Get, "tenants/contoso/usage");
 ```
 
 ### Receiving webhooks
@@ -129,6 +133,9 @@ its compliance runs; `tenant.updated` when we change one of your tenants
 threshold or below (`balance` and `alert_threshold` in the event; once, until
 it is topped up above it). Set the threshold with the tenant:
 `PUT /v1/tenants/{tenant}` with `credit_alert_threshold` (50 unless you do).
+`credits.pool_low` comes when your own credit pool falls to its threshold
+(`PATCH /v1/credits`; none unless you set one), with an email to your contact
+address.
 
 Answer with any 2xx within 10 seconds, and de-duplicate on the event id: a
 delivery can arrive more than once. `ListWebhookDeliveriesAsync` shows what

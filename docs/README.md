@@ -30,10 +30,12 @@ Staging is at `https://partners-staging.interactdc.com`. You move to
    The sample does it for you:
    `dotnet run --project dotnet/samples/Walkthrough -- keygen`. Keep the
    private key to yourself.
-2. **We register your system** and send you its client id. We also add
-   credits to your test tenant, because a run spends them.
-3. **Run the sample's walkthrough** against staging. In ten steps it signs
-   your system in, creates a tenant and signs in one of its users, looks up
+2. **We register your system** and send you its client id. We also put
+   credits in your credit pool, so you can give your test tenants some: a run
+   spends them.
+3. **Run the sample's walkthrough** against staging. Step by step it signs
+   your system in, creates a tenant, gives it credits from your pool, signs in
+   one of its users, looks up
    hardware, checks a server list and fixes it, then creates a simulation,
    runs it and prints the results. If your plan includes EU compliance, it
    then makes a compliance label for the same servers. If it runs green, your key, client id and

@@ -13,8 +13,8 @@ Steps 1 to 8 happen on staging; steps 9 to 11 repeat the key steps for productio
 | 3 | You | Send us the items under [What we need from you](#what-we-need-from-you) |
 | 4 | Interact | We register your staging system and send you its client id and the addresses you need |
 | 5 | You | Check the connection: get an access token and call `GET /v1/ping` |
-| 6 | You | Create a test tenant, sign in a test user and call `GET /v1/tenants/{tenant}/me` as them |
-| 7 | Interact | We add credits to your test tenant |
+| 6 | Interact | We put credits in your credit pool |
+| 7 | You | Create a test tenant, give it credits from your pool, sign in a test user and call `GET /v1/tenants/{tenant}/me` as them |
 | 8 | You | Build and test your integration against staging, starting with the checks under [What you can build and test now](#what-you-can-build-and-test-now) |
 | 9 | You | Create a separate key pair for production and send us its public key |
 | 10 | Interact | We register your production system and send you its client id |

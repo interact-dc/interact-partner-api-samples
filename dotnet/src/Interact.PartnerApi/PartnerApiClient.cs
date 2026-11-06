@@ -63,6 +63,44 @@ public sealed class PartnerApiClient
     public Task<Page<Tenant>> ListTenantsAsync(string? cursor = null, CancellationToken ct = default) =>
         SendAsync<Page<Tenant>>(HttpMethod.Get, cursor is null ? "tenants" : $"tenants?cursor={Escape(cursor)}", ct: ct);
 
+    /// <summary>Your credit pool, to give your tenants.</summary>
+    public Task<CreditPool> GetCreditPoolAsync(CancellationToken ct = default) =>
+        SendAsync<CreditPool>(HttpMethod.Get, "credits", ct: ct);
+
+    /// <summary>At or below this you are told your pool is low; 0 never.</summary>
+    public Task<CreditPool> SetCreditPoolAlertAsync(int alertThreshold, CancellationToken ct = default) =>
+        SendAsync<CreditPool>(HttpMethod.Patch, "credits", new PoolThreshold(alertThreshold), ct: ct);
+
+    /// <summary>Every movement of your pool, newest first.</summary>
+    public Task<Page<PoolTransaction>> ListCreditPoolTransactionsAsync(string? cursor = null, CancellationToken ct = default) =>
+        SendAsync<Page<PoolTransaction>>(HttpMethod.Get,
+            cursor is null ? "credits/transactions" : $"credits/transactions?cursor={Escape(cursor)}", ct: ct);
+
+    /// <summary>A tenant's credits and its latest transactions.</summary>
+    public Task<TenantCredits> GetTenantCreditsAsync(string tenantRef, CancellationToken ct = default) =>
+        SendAsync<TenantCredits>(HttpMethod.Get, $"tenants/{Escape(tenantRef)}/credits", ct: ct);
+
+    /// <summary>
+    /// Give a tenant credits from your pool. Too few in the pool: <see cref="PartnerApiException"/>
+    /// <c>insufficient_pool_credits</c>. To retry safely after a timeout or a lost connection, pass the
+    /// same <paramref name="idempotencyKey"/> again (one you keep, say with the order it answers to): the
+    /// retry gets the first answer and moves nothing more. Without one, each call is a new move.
+    /// </summary>
+    public Task<CreditsMoved> AllocateTenantCreditsAsync(string tenantRef, int amount, string? idempotencyKey = null,
+                                                         CancellationToken ct = default) =>
+        SendAsync<CreditsMoved>(HttpMethod.Post, $"tenants/{Escape(tenantRef)}/credits/allocate", new CreditAmount(amount),
+                                ct: ct, idempotencyKey: idempotencyKey);
+
+    /// <summary>
+    /// Take a tenant's unspent credits back into your pool. More than it has unspent:
+    /// <see cref="PartnerApiException"/> <c>insufficient_tenant_credits</c>. Retry with the same
+    /// <paramref name="idempotencyKey"/>, as for <see cref="AllocateTenantCreditsAsync"/>.
+    /// </summary>
+    public Task<CreditsMoved> ReclaimTenantCreditsAsync(string tenantRef, int amount, string? idempotencyKey = null,
+                                                        CancellationToken ct = default) =>
+        SendAsync<CreditsMoved>(HttpMethod.Post, $"tenants/{Escape(tenantRef)}/credits/reclaim", new CreditAmount(amount),
+                                ct: ct, idempotencyKey: idempotencyKey);
+
     /// <summary>The user a token acts as, in their tenant, with what they can use.</summary>
     public Task<Me> GetMeAsync(PartnerUser user, CancellationToken ct = default) =>
         SendAsync<Me>(HttpMethod.Get, $"tenants/{Escape(user.Tenant)}/me", user: user, ct: ct);
@@ -186,12 +224,13 @@ public sealed class PartnerApiClient
     /// <summary>
     /// Any call to the API: <paramref name="path"/> is relative to <c>/v1/</c>.
     /// Pass <paramref name="user"/> to act as one of your users; leave it out to act as your system.
+    /// A POST carries an <c>Idempotency-Key</c>: <paramref name="idempotencyKey"/>, or a new one.
     /// </summary>
     public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null,
                                       PartnerUser? user = null, CancellationToken ct = default,
-                                      Dictionary<string, string>? headers = null)
+                                      Dictionary<string, string>? headers = null, string? idempotencyKey = null)
     {
-        var idempotencyKey = method == HttpMethod.Post ? Guid.NewGuid().ToString() : null;
+        idempotencyKey = method == HttpMethod.Post ? idempotencyKey ?? Guid.NewGuid().ToString() : null;
         var tokenReplaced = false;
         for (var tries = 1; ; tries++)
         {
