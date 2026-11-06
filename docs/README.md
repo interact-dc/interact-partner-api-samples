@@ -35,7 +35,8 @@ Staging is at `https://partners-staging.interactdc.com`. You move to
 3. **Run the sample's walkthrough** against staging. In ten steps it signs
    your system in, creates a tenant and signs in one of its users, looks up
    hardware, checks a server list and fixes it, then creates a simulation,
-   runs it and prints the results. If it runs green, your key, client id and
+   runs it and prints the results. If your plan includes EU compliance, it
+   then makes a compliance label for the same servers. If it runs green, your key, client id and
    network path all work.
 4. **Build the same flow in your system**, using the sample's code or a
    client generated from the OpenAPI description:

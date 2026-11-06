@@ -42,7 +42,8 @@ export INTERACT_KEY_FILE=my-interact-key.pem
 dotnet run --project dotnet/samples/Walkthrough -- walkthrough
 ```
 
-In ten steps it:
+In ten steps (thirteen if your plan and your client's scopes include EU
+compliance) it:
 
 1. checks your token;
 2. creates a tenant (`sample-tenant`, or set `INTERACT_TENANT`);
@@ -57,10 +58,17 @@ In ten steps it:
    settled, then creates the simulation with the fixed list and a target;
 9. runs it, waiting up to 10 seconds for the result (and following it if it
    takes longer);
-10. prints what the target would change: servers, energy and carbon.
+10. prints what the target would change: servers, energy and carbon;
+11. creates an EU compliance report for the data centre those servers are in,
+    with its facility figures (PUE, WUE, networking and storage shares,
+    utilisation);
+12. runs it, waiting for the label;
+13. prints the label: PUE and WUE with their grades, ITEE and how many servers
+    it covers, and a year's energy, carbon and water.
 
-**A run spends one of the tenant's credits.** A new tenant has none: ask
-Interact to add some to your test tenant before step 9.
+**Runs spend the tenant's credits:** one per target for the simulation, and
+one for the compliance label, so the walkthrough needs two. A new tenant has
+none: ask Interact to add some to your test tenant before step 9.
 
 ### 3. Use the library in your system
 
@@ -113,7 +121,11 @@ if (received.Type == "run.completed") { /* read the run at received.Data.GetProp
 ```
 
 The events: `run.completed`, `run.failed` and `run.paused` for a tenant's
-runs, and `credits.low` when spending takes a tenant's balance to its alert
+simulation runs; `compliance_report.completed`, `.failed` and `.paused` for
+its compliance runs; `tenant.updated` when we change one of your tenants
+(`change` is `platform_suspended`, `platform_resumed`, `modules_blocked` or
+`assurance_changed`; what your own system changes isn't sent back), and
+`credits.low` when spending takes a tenant's balance to its alert
 threshold or below (`balance` and `alert_threshold` in the event; once, until
 it is topped up above it). Set the threshold with the tenant:
 `PUT /v1/tenants/{tenant}` with `credit_alert_threshold` (50 unless you do).

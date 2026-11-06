@@ -71,6 +71,8 @@ Everything is live on staging, simulations included, so you can build and prove 
 | 13. You can run it and read the results | `POST .../simulations/{id}/runs` with `Prefer: wait=10`; if it answers 202, `GET` its `Location` | The run is `completed`, with each target's servers, energy, carbon and reductions |
 | 14. Your receiver gets webhooks | `PUT /v1/webhooks` with your https address, `POST /v1/webhooks/secret`, then `POST /v1/webhooks/test` | Your receiver verifies a `ping`, answers 2xx, and `GET /v1/webhooks/deliveries` shows it `delivered` |
 | 15. A finished run tells you | Run a simulation as in check 13, without waiting | Your receiver gets `run.completed`, verifies it, and reads the run at its `path` |
+| 16. A compliance report can be made (EU compliance plans) | Create a tenant with `"modules": ["simulations", "compliance"]`, then `POST /v1/tenants/{tenant}/compliance-reports` with a `facility` (country, PUE, WUE) and settled servers, each with its CPU count and memory | 201, status `ready` |
+| 17. You can run it and read the label | `POST .../compliance-reports/{id}/runs` with `Prefer: wait=10`; if it answers 202, `GET` its `Location`, or wait for `compliance_report.completed` | The run is `completed`, with PUE and WUE graded, ITEE, ITEU and PerfCPU with their coverage, energy, carbon, water, and the servers |
 
 Checks 6, 11 and 12 are how every simulation starts. Your users build the server list, you check it, and they settle each server (the suggestion, an alternative, or one from the catalogue pickers) or take it out. Then you send it with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results. A run spends the tenant's credits, one per target: we add credits to your test tenant.
 
@@ -90,7 +92,7 @@ Checks 6, 11 and 12 are how every simulation starts. Your users build the server
 
 **Webhooks.** You set them up yourself, with your system's token: the address (`PUT /v1/webhooks`) and the signing secret (`POST /v1/webhooks/secret`), which is shown to you once. We never see it. Each event is signed per the [Standard Webhooks](https://www.standardwebhooks.com/) specification, so verify it with their libraries or the sample's `WebhookVerifier`. Events are delivered at least once: de-duplicate on `webhook-id`. Answer with any 2xx within 10 seconds. Anything else is tried again for about a day, and `GET /v1/webhooks/deliveries` shows what your address answered.
 
-**Not yet available:** EU compliance reports. We will tell you when they reach staging; nothing in checks 1 to 15 changes when they do.
+**Compliance reports** work like simulations: the same server checking and settling, one credit a run, the same run statuses and webhooks. The facility is in fractions (`networking_share: 0.05` is 5%), and a compliance server must give its CPU count and memory, because without them it would add nothing to the label. A server you exclude is left out of the label; one that didn't match still counts in its totals and coverage, but isn't rated.
 
 ## Looking after your keys
 

@@ -90,7 +90,7 @@ sequenceDiagram
 
 The settings tune the model: server and GPU utilisation, PUE, energy cost per kWh, maintenance cost per server, licensing cost per core, and the currency.
 
-A compliance report rates one data centre against the EU Energy Efficiency Directive, giving its PUE and WUE on an A to G scale with its energy, carbon and water figures. Instead of targets it takes the data centre's location and facility figures: PUE, WUE, cooling, server utilisation, and the share of power drawn by networking and storage. Every uncertain match must be confirmed, corrected or skipped before a report can run.
+A compliance report rates one data centre against the EU Energy Efficiency Directive, giving its PUE and WUE on an A to G scale with its energy, carbon and water figures. Instead of targets it takes the data centre's location and facility figures: PUE, WUE, cooling, server utilisation, and the share of power drawn by networking and storage, as fractions. Its servers are settled exactly as a simulation's are, and each gives its CPU count and memory, plus its drives and, if you know it, its own utilisation. A run costs one credit however many servers there are, and returns the label: each fleet figure says how many of the servers it covers, and each server says whether it was rated.
 
 **Why matching comes first.** We can only model hardware we know, so every current server is matched to our catalogue before a simulation is created. First you check the list: we say how each server matched, with alternatives for any we are unsure of. Your app then lets the user settle each one or take it out, as often as they need. Then you send the list with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results.
 
@@ -132,5 +132,5 @@ The API reference, as ReDoc or Swagger UI, is live for the staging sandbox at [p
 | Staging sandbox | Built |
 | Hardware catalogue and matching | Built |
 | Simulations, runs and results | Built |
-| Webhooks for finished runs and low credits | Built |
-| EU compliance labels | Coming |
+| Webhooks for runs, compliance labels, tenant changes and low credits | Built |
+| EU compliance labels | Built |

@@ -119,6 +119,50 @@ public sealed class PartnerApiClient
         }
     }
 
+    /// <summary>
+    /// Create an EU compliance report of the user's. Every server must be settled, as for a
+    /// simulation, or nothing is created (<c>servers_unresolved</c>).
+    /// </summary>
+    public Task<ComplianceReport> CreateComplianceReportAsync(PartnerUser user, ComplianceReportRequest report,
+                                                              CancellationToken ct = default) =>
+        SendAsync<ComplianceReport>(HttpMethod.Post, $"tenants/{Escape(user.Tenant)}/compliance-reports", report, user, ct);
+
+    public Task<ComplianceReport> GetComplianceReportAsync(PartnerUser user, Guid reportId, CancellationToken ct = default) =>
+        SendAsync<ComplianceReport>(HttpMethod.Get, $"tenants/{Escape(user.Tenant)}/compliance-reports/{reportId}",
+                                    user: user, ct: ct);
+
+    /// <summary>
+    /// Start a compliance run, charging one credit, and wait up to <paramref name="waitSeconds"/>
+    /// (at most 10) for its label. A run still going when the wait ends comes back unfinished:
+    /// follow it with <see cref="WaitForComplianceRunAsync"/>.
+    /// </summary>
+    public Task<ComplianceRun> StartComplianceRunAsync(PartnerUser user, Guid reportId, int waitSeconds = 10,
+                                                       CancellationToken ct = default) =>
+        SendAsync<ComplianceRun>(HttpMethod.Post, $"tenants/{Escape(user.Tenant)}/compliance-reports/{reportId}/runs",
+                                 user: user,
+                                 headers: waitSeconds > 0 ? new() { ["Prefer"] = $"wait={waitSeconds}" } : null, ct: ct);
+
+    public Task<ComplianceRun> GetComplianceRunAsync(PartnerUser user, Guid reportId, int version,
+                                                     CancellationToken ct = default) =>
+        SendAsync<ComplianceRun>(HttpMethod.Get,
+                                 $"tenants/{Escape(user.Tenant)}/compliance-reports/{reportId}/runs/{version}",
+                                 user: user, ct: ct);
+
+    /// <summary>Read the compliance run every <paramref name="every"/> (a second by default) until it has finished.</summary>
+    public async Task<ComplianceRun> WaitForComplianceRunAsync(PartnerUser user, Guid reportId, int version,
+                                                               TimeSpan? every = null, CancellationToken ct = default)
+    {
+        while (true)
+        {
+            var run = await GetComplianceRunAsync(user, reportId, version, ct);
+            if (run.Finished) return run;
+            // A paused run waits for capacity at the analysis service: no sooner than it says.
+            var delay = every ?? TimeSpan.FromSeconds(1);
+            if (run.ResumeAfter is { } resume && resume - DateTimeOffset.UtcNow > delay) delay = resume - DateTimeOffset.UtcNow;
+            await _wait(delay, ct);
+        }
+    }
+
     /// <summary>Where your webhooks go, and whether a secret has been made.</summary>
     public Task<WebhookSettings> GetWebhookAsync(CancellationToken ct = default) =>
         SendAsync<WebhookSettings>(HttpMethod.Get, "webhooks", ct: ct);

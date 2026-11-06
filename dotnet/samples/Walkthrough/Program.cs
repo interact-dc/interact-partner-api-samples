@@ -57,7 +57,16 @@ static async Task<int> Walkthrough()
         Console.WriteLine($"   Signed in as client {ping.ClientId} of partner {ping.Partner}, scopes: {string.Join(" ", ping.Scopes)}");
 
         Step(2, $"Create (or update) a tenant for one of your customers: {tenantRef}");
-        var tenant = await client.PutTenantAsync(tenantRef, new TenantRequest("Sample customer", ["simulations"]));
+        Tenant tenant;
+        try
+        {
+            tenant = await client.PutTenantAsync(tenantRef, new TenantRequest("Sample customer", ["simulations", "compliance"]));
+        }
+        catch (PartnerApiException refused) when (refused.Code == "validation_failed")
+        {
+            // Your plan doesn't include EU compliance: the walkthrough leaves those steps out.
+            tenant = await client.PutTenantAsync(tenantRef, new TenantRequest("Sample customer", ["simulations"]));
+        }
         Console.WriteLine($"   {tenant.Name}: {tenant.Status}, can use {string.Join(", ", tenant.Modules.Effective)}");
 
         Step(3, "List your tenants");
@@ -164,6 +173,52 @@ static async Task<int> Walkthrough()
             Console.WriteLine($"     energy {t.EnergyKwhPerYear.Current:N0} -> {t.EnergyKwhPerYear.New:N0} kWh a year, " +
                               $"{t.ReductionsPct?.Energy}% less; carbon {t.CarbonKgPerYear.New:N0} kg a year, " +
                               $"{t.ReductionsPct?.Carbon}% less");
+        }
+
+        // The tenant must have the module, and your client the scope its users' tokens carry.
+        if (tenant.Modules.Effective.Contains("compliance") && me.Scopes.Contains("compliance:write"))
+        {
+            Step(11, "Create an EU compliance report for the data centre those servers are in");
+            // The same settled servers, with the facility's own figures. Shares are fractions.
+            var dataCentre = new Facility("IE", Pue: 1.32m, Wue: 0.45m, NetworkingShare: 0.05m, StorageShare: 0.10m,
+                                          ServerUtilisation: 0.30m);
+            // A compliance server needs its CPU count and memory: never guess them.
+            var servers = settled.Select(s => new ComplianceServerLine(
+                s.Ref, s.Vendor, s.Model, s.Cpu,
+                s.CpuCount ?? throw new InvalidOperationException($"{s.Ref} has no CPU count"),
+                s.MemoryGb ?? throw new InvalidOperationException($"{s.Ref} has no memory"),
+                Quantity: s.Quantity, SsdDrives: 2, Match: s.Match)).ToList();
+            var report = await client.CreateComplianceReportAsync(user, new ComplianceReportRequest(
+                "Sample data centre label", dataCentre, servers));
+            Console.WriteLine($"   Created {report.Id}: {report.Status}, {report.Servers.Matched} servers matched");
+
+            Step(12, "Run it, waiting for the label");
+            var labelRun = await client.StartComplianceRunAsync(user, report.Id, waitSeconds: 10);
+            if (!labelRun.Finished)
+            {
+                Console.WriteLine($"   Still {labelRun.Status} after 10 seconds; following it...");
+                labelRun = await client.WaitForComplianceRunAsync(user, report.Id, labelRun.Version);
+            }
+            Console.WriteLine($"   Run {labelRun.Version}: {labelRun.Status}, {labelRun.CreditsUsed} credit(s)");
+
+            Step(13, "Read the label");
+            if (labelRun.Results is not { } label)
+            {
+                Console.Error.WriteLine($"   No label: {labelRun.Error}");
+                return 1;
+            }
+            Console.WriteLine($"   PUE {label.Pue.Value} (grade {label.Pue.Grade}), WUE {label.Wue.Value} (grade {label.Wue.Grade}), " +
+                              $"scheme {label.SchemeVersion}");
+            var itee = label.Efficiency.Itee;
+            Console.WriteLine($"   ITEE {itee.Value:N0}, over {itee.ServersCovered} of {itee.ServersTotal} servers");
+            Console.WriteLine($"   A year: {label.Energy.TotalKwh:N0} kWh, {label.Carbon.Scope2Kgco2e:N0} kg CO2e (scope 2), " +
+                              $"{label.Water.TotalM3:N0} m3 of water");
+            foreach (var server in label.Servers)
+                Console.WriteLine($"   {server.Quantity} x {server.Vendor} {server.Model}: {server.Status}, grade {server.Grade}");
+        }
+        else
+        {
+            Console.WriteLine("\n(EU compliance isn't in your plan or your client's scopes, so its steps are left out.)");
         }
 
         Console.WriteLine();

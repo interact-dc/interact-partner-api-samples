@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Interact.PartnerApi;
 
 // The shapes of the API's requests and responses. The API reference
@@ -142,3 +144,87 @@ public sealed record WebhookTest(string EventId);
 public sealed record WebhookDelivery(
     string EventId, string Type, string Status, int Attempts, DateTimeOffset? NextAttemptAt, int? LastStatusCode,
     string? LastError, DateTimeOffset CreatedAt, DateTimeOffset? DeliveredAt);
+
+// --- EU compliance reports ------------------------------------------------------------
+
+/// <summary>
+/// The data centre a compliance report describes. Shares and utilisation are fractions
+/// (0.05 is 5%), to 3 decimal places; PUE and WUE to 2. Decimals, so a figure arrives exactly as
+/// written. Set or replaced as a whole. Countries: <c>GET /v1/catalogue/locations</c>.
+/// </summary>
+public sealed record Facility(
+    string Country, decimal Pue, decimal Wue, string? Region = null, string? PueSource = null,
+    string? WueSource = null, decimal? NetworkingShare = null, decimal? StorageShare = null,
+    decimal? ServerUtilisation = null, decimal? GpuUtilisation = null, string? Cooling = null,
+    decimal? CarbonIntensity = null, decimal? WaterIntensity = null);
+
+/// <summary>
+/// A server in the data centre: a simulation's, with what a label also needs. Its CPU count
+/// and memory are required: without them it would add nothing to the label.
+/// </summary>
+public sealed record ComplianceServerLine(
+    string Ref, string Vendor, string Model, string? Cpu, int CpuCount, int MemoryGb, string? Gpu = null,
+    int? GpuCount = null, int Quantity = 1, int SsdDrives = 0, int HddDrives = 0, int NvmeDrives = 0,
+    decimal? Utilisation = null, decimal? GpuUtilisation = null, ServerMatch? Match = null);
+
+/// <summary>The body of <c>POST /v1/tenants/{tenant}/compliance-reports</c>.</summary>
+public sealed record ComplianceReportRequest(
+    string Name, Facility? Facility = null, IReadOnlyList<ComplianceServerLine>? Servers = null,
+    string? Visibility = null, string? CustomerName = null, string? CustomerReference = null, string? Notes = null);
+
+/// <summary>A compliance report. <see cref="Status"/> is <c>ready</c> once it has servers, settled, and its facility.</summary>
+public sealed record ComplianceReport(Guid Id, string Name, string Status, ServerCounts Servers, Facility? Facility);
+
+/// <summary>
+/// A compliance run. <see cref="Status"/> is <c>running</c>, <c>paused</c> (until
+/// <see cref="ResumeAfter"/>), <c>completed</c> or <c>failed</c>; <see cref="Results"/> once completed.
+/// </summary>
+public sealed record ComplianceRun(
+    int Version, string Status, DateTimeOffset? ResumeAfter, int CreditsUsed, string? Error, Label? Results)
+{
+    public bool Finished => Status is "completed" or "failed";
+}
+
+/// <summary>A figure the label grades, A to G.</summary>
+public sealed record Graded(double? Value, string? Grade, string? Source);
+
+/// <summary>A fleet figure, and how many of the servers it was worked out over.</summary>
+public sealed record Covered(double? Value, int? ServersCovered, int? ServersTotal);
+
+public sealed record Efficiency(Covered Itee, Covered Iteu, Covered PerfCpu);
+
+/// <summary>A year's energy.</summary>
+public sealed record Energy(long? ServersKwh, long? ItKwh, long? FacilityKwh, long? TotalKwh);
+
+/// <summary>A year's carbon.</summary>
+public sealed record Carbon(
+    [property: JsonPropertyName("scope2_kgco2e")] long? Scope2Kgco2e,
+    [property: JsonPropertyName("scope3_kgco2e")] long? Scope3Kgco2e,
+    double? Cue);
+
+/// <summary>A year's water. Compare volumes only between labels of the same methodology version.</summary>
+public sealed record Water(
+    [property: JsonPropertyName("direct_m3")] long? DirectM3,
+    [property: JsonPropertyName("indirect_m3")] long? IndirectM3,
+    [property: JsonPropertyName("total_m3")] long? TotalM3,
+    string? MethodologyVersion);
+
+public sealed record Drives(int Ssd, int Hdd, int Nvme);
+
+/// <summary>Servers alike in everything here, together. <see cref="Status"/>: <c>rated</c>, <c>server_not_found</c>, <c>cpu_not_found</c> or <c>not_reported</c>.</summary>
+public sealed record LabelServer(
+    string? Vendor, string? Model, string? Cpu, int? Cpus, int? MemoryGb, string? Gpu, int Quantity, double? Utilisation,
+    Drives Drives, string? Grade, string Status, double? AvgPowerW, double? AnnualEnergyKwh);
+
+public sealed record LabelLocation(string? Country, string? Region);
+
+/// <summary>The location's grid figures the label used.</summary>
+public sealed record Grid(
+    [property: JsonPropertyName("carbon_intensity_kgco2e_per_kwh")] double? CarbonIntensityKgco2ePerKwh,
+    int? CarbonIntensityYear,
+    [property: JsonPropertyName("water_intensity_l_per_kwh")] double? WaterIntensityLPerKwh);
+
+/// <summary>A completed run's EU data centre label.</summary>
+public sealed record Label(
+    LabelLocation Location, Graded Pue, Graded Wue, string? SchemeVersion, Efficiency Efficiency, Energy Energy,
+    Carbon Carbon, Water Water, Grid Grid, IReadOnlyList<LabelServer> Servers);

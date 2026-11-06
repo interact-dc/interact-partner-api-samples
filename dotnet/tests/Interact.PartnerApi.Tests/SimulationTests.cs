@@ -140,3 +140,71 @@ public class RunTests : ClientTestBase
         Assert.Equal((402, "insufficient_credits", 1, 0), (error.Status, error.Code, error.CreditsNeeded, error.CreditsAvailable));
     }
 }
+
+public class ComplianceTests : ClientTestBase
+{
+    private static readonly Guid Id = Guid.Parse("7a2e4d3b-2222-4333-8444-a55566667777");
+
+    [Fact]
+    public async Task A_report_is_created_with_its_facility_and_each_server()
+    {
+        Handler.Token("bob-token").Then(HttpStatusCode.Created, """
+            {"id":"7a2e4d3b-2222-4333-8444-a55566667777","name":"Dublin","visibility":"private","status":"ready",
+             "servers":{"total":1,"matched":1,"needs_review":0,"unmatched":0,"excluded":0,"pending":0},
+             "facility":{"country":"IE","region":null,"pue":1.32,"pue_source":"reported","wue":0.45,
+                         "wue_source":"reported","networking_share":0.05,"storage_share":0.0,"server_utilisation":null,
+                         "gpu_utilisation":null,"cooling":null,"carbon_intensity":null,"water_intensity":null},
+             "owner":null,"created_at":"2026-11-06T10:00:00Z"}
+            """);
+
+        var report = await Client().CreateComplianceReportAsync(Bob, new ComplianceReportRequest("Dublin",
+            new Facility("IE", 1.32m, 0.45m, NetworkingShare: 0.05m),
+            [new ComplianceServerLine("rack-1", "Dell", "R64O", "Gold 6230", CpuCount: 2, MemoryGb: 256, Quantity: 4,
+                                      SsdDrives: 2, Match: new ServerMatch("Dell", "PowerEdge R640", "Intel Xeon Gold 6230"))]));
+
+        var sent = Handler.Sent[1];
+        Assert.Equal(new Uri(BaseAddress, "v1/tenants/contoso/compliance-reports"), sent.Uri);
+        var body = JsonDocument.Parse(sent.Body).RootElement;
+        Assert.Equal(0.05, body.GetProperty("facility").GetProperty("networking_share").GetDouble());
+        var server = body.GetProperty("servers")[0];
+        Assert.Equal((2, 256, 2), (server.GetProperty("cpu_count").GetInt32(), server.GetProperty("memory_gb").GetInt32(),
+                                   server.GetProperty("ssd_drives").GetInt32()));
+        Assert.Equal(("ready", Id, "IE"), (report.Status, report.Id, report.Facility!.Country));
+    }
+
+    [Fact]
+    public async Task A_run_waits_for_its_label_and_reads_it()
+    {
+        Handler.Token().Then(HttpStatusCode.Created, """
+            {"version":1,"status":"completed","resume_after":null,"credits_used":1,"submitted_by":null,
+             "submitted_at":"2026-11-06T10:00:00Z","completed_at":"2026-11-06T10:00:03Z","error":null,
+             "results":{"location":{"country":"IE","region":null},
+               "pue":{"value":1.32,"grade":"C","source":"reported"},"wue":{"value":0.45,"grade":"D","source":"reported"},
+               "scheme_version":"2026-07",
+               "efficiency":{"itee":{"value":11234.5,"servers_covered":3,"servers_total":4},
+                             "iteu":{"value":41.2,"servers_covered":4,"servers_total":4},
+                             "perf_cpu":{"value":950000.0,"servers_covered":3,"servers_total":4}},
+               "energy":{"servers_kwh":7000,"it_kwh":8000,"facility_kwh":2560,"total_kwh":10560},
+               "carbon":{"scope2_kgco2e":2100,"scope3_kgco2e":8000,"cue":0.347},
+               "water":{"direct_m3":4,"indirect_m3":9,"total_m3":13,"methodology_version":"2026-09"},
+               "grid":{"carbon_intensity_kgco2e_per_kwh":0.263,"carbon_intensity_year":2024,"water_intensity_l_per_kwh":0.822},
+               "servers":[{"vendor":"Dell","model":"PowerEdge R640","cpu":"Intel Xeon Gold 6230","cpus":2,"memory_gb":256,
+                           "gpu":null,"quantity":4,"utilisation":0.3,"drives":{"ssd":0,"hdd":0,"nvme":0},"grade":"B",
+                           "status":"rated","avg_power_w":310.5,"annual_energy_kwh":10879.2}]}}
+            """);
+
+        var run = await Client().StartComplianceRunAsync(Bob, Id, waitSeconds: 5);
+
+        var sent = Handler.Sent[1];
+        Assert.Equal(new Uri(BaseAddress, $"v1/tenants/contoso/compliance-reports/{Id}/runs"), sent.Uri);
+        Assert.Equal("wait=5", sent.Headers["Prefer"]);
+        Assert.True(run.Finished);
+        var label = run.Results!;
+        Assert.Equal(("C", "D"), (label.Pue.Grade, label.Wue.Grade));
+        Assert.Equal((3, 4), (label.Efficiency.Itee.ServersCovered, label.Efficiency.Itee.ServersTotal));
+        Assert.Equal((2100L, 13L), (label.Carbon.Scope2Kgco2e, label.Water.TotalM3));
+        Assert.Equal(("rated", 4), (label.Servers[0].Status, label.Servers[0].Quantity));
+        Assert.Equal((0.263, 0.822), (label.Grid.CarbonIntensityKgco2ePerKwh, label.Grid.WaterIntensityLPerKwh));
+        Assert.Equal(("IE", 256, 0), (label.Location.Country, label.Servers[0].MemoryGb, label.Servers[0].Drives.Ssd));
+    }
+}
