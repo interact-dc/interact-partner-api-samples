@@ -18,7 +18,7 @@ public sealed record PartnerApiOptions(Uri BaseAddress, string ClientId, ECDsa S
 /// It gets and reuses access tokens for you, as your system or as one of your
 /// users. A token the API refuses is replaced once. A rate-limited call waits
 /// as long as the API says and is tried again, up to three times. Every POST
-/// carries an Idempotency-Key, the same on each retry, so a retried POST never
+/// has an Idempotency-Key, the same on each retry, so a retried POST never
 /// does its work twice. Errors are raised as <see cref="PartnerApiException"/>.
 /// </summary>
 public sealed class PartnerApiClient
@@ -224,7 +224,7 @@ public sealed class PartnerApiClient
     /// <summary>
     /// Any call to the API: <paramref name="path"/> is relative to <c>/v1/</c>.
     /// Pass <paramref name="user"/> to act as one of your users; leave it out to act as your system.
-    /// A POST carries an <c>Idempotency-Key</c>: <paramref name="idempotencyKey"/>, or a new one.
+    /// A POST has an <c>Idempotency-Key</c>: <paramref name="idempotencyKey"/>, or a new one.
     /// </summary>
     public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null,
                                       PartnerUser? user = null, CancellationToken ct = default,

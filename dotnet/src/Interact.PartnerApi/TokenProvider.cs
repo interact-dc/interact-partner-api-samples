@@ -12,7 +12,7 @@ internal sealed class TokenProvider(HttpClient http, AssertionSigner signer, Uri
     private const string TokenExchange = "urn:ietf:params:oauth:grant-type:token-exchange";
     private const string JwtTokenType = "urn:ietf:params:oauth:token-type:jwt";
 
-    /// <summary>A token is replaced this long before it runs out, so a call never carries one that expires in flight.</summary>
+    /// <summary>A token is replaced this long before it runs out, so a call never uses one that expires in flight.</summary>
     private static readonly TimeSpan RefreshBefore = TimeSpan.FromSeconds(60);
 
     private readonly Dictionary<string, (string Token, DateTimeOffset Expires)> _tokens = [];

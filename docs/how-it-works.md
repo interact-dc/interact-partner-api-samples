@@ -79,7 +79,7 @@ sequenceDiagram
     I-->>App: The results, kept to view again
 ```
 
-**Creating it.** One call carries everything a simulation or compliance report needs: its type, the customer's current servers, any target servers and the settings. What it needs depends on the type:
+**Creating it.** One call sends everything a simulation or compliance report needs: its type, the customer's current servers, any target servers and the settings. What it needs depends on the type:
 
 | Type | Current servers | Target servers |
 | --- | --- | --- |
@@ -113,7 +113,7 @@ How you present these is up to you.
 - **Run limits:** each tenant can have 10 runs going at once and start 2,000 a day (UTC), and your tenants together can have 50 going at once. We can agree different limits with you. Past one, starting a run is refused with a 429 (`too_many_runs` or `daily_run_limit`) that says the limit and how long to wait.
 - **Rate limits:** per minute, 1,200 calls for your system, 600 per tenant and 120 per user, the same for every partner. Every response says how much is left; past a limit you get a 429 with how long to wait.
 - **Errors:** every error has the same standard shape (RFC 9457) with a stable `code` your app can act on, and a message for people.
-- **Support:** every response carries a request id. Quote it to us and we can see exactly what happened to that call, including why a token request was refused.
+- **Support:** every response has a request id. Quote it to us and we can see exactly what happened to that call, including why a token request was refused.
 
 ## Getting started
 

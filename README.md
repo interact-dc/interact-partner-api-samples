@@ -172,7 +172,7 @@ What it does for you:
   `WaitForRunAsync` follows a longer one, never sooner than a paused run says.
 - **Sends request bodies with their length.** The API can't read a chunked
   body, so avoid `PostAsJsonAsync` and `JsonContent` in your own code too.
-- **Raises errors you can act on**: `PartnerApiException` carries the API's
+- **Raises errors you can act on**: `PartnerApiException` has the API's
   stable `Code`, the `Detail`, any field `Errors`, servers not settled
   (`Unresolved`), credits needed and available, and the `RequestId`.
 

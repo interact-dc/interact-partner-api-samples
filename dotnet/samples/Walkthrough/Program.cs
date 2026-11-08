@@ -196,7 +196,7 @@ static async Task<int> Walkthrough()
                               $"{t.ReductionsPct?.Carbon}% less");
         }
 
-        // The tenant must have the module, and your client the scope its users' tokens carry.
+        // The tenant must have the module, and your client the scope its users' tokens need.
         if (tenant.Modules.Effective.Contains("compliance") && me.Scopes.Contains("compliance:write"))
         {
             Step(12, "Create an EU compliance report for the data centre those servers are in");

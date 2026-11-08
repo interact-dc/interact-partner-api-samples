@@ -61,7 +61,7 @@ production, and we register it. Then you go live.
 
 ## Getting help
 
-When a call fails, send us its request id. Every response carries one, as the
+When a call fails, send us its request id. Every response has one, as the
 `X-Request-ID` header and as `request_id` in every error. With it we can see
 exactly what happened to that call, including why a token request was refused.
 
