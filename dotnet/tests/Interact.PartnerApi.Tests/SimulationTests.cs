@@ -205,12 +205,12 @@ public class ComplianceTests : ClientTestBase
         Assert.Equal(new Uri(BaseAddress, $"v1/tenants/contoso/compliance-reports/{Id}/runs"), sent.Uri);
         Assert.Equal("wait=5", sent.Headers["Prefer"]);
         Assert.True(run.Finished);
-        var label = run.Results!;
-        Assert.Equal(("C", "D"), (label.Pue.Grade, label.Wue.Grade));
-        Assert.Equal((3, 4), (label.Efficiency.Itee.ServersCovered, label.Efficiency.Itee.ServersTotal));
-        Assert.Equal((2100L, 13L), (label.Carbon.Scope2Kgco2e, label.Water.TotalM3));
-        Assert.Equal(("rated", 4), (label.Servers[0].Status, label.Servers[0].Quantity));
-        Assert.Equal((0.263, 0.822), (label.Grid.CarbonIntensityKgco2ePerKwh, label.Grid.WaterIntensityLPerKwh));
-        Assert.Equal(("IE", 256, 0), (label.Location.Country, label.Servers[0].MemoryGb, label.Servers[0].Drives.Ssd));
+        var results = run.Results!;
+        Assert.Equal(("C", "D"), (results.Pue.Grade, results.Wue.Grade));
+        Assert.Equal((3, 4), (results.Efficiency.Itee.ServersCovered, results.Efficiency.Itee.ServersTotal));
+        Assert.Equal((2100L, 13L), (results.Carbon.Scope2Kgco2e, results.Water.TotalM3));
+        Assert.Equal(("rated", 4), (results.Servers[0].Status, results.Servers[0].Quantity));
+        Assert.Equal((0.263, 0.822), (results.Grid.CarbonIntensityKgco2ePerKwh, results.Grid.WaterIntensityLPerKwh));
+        Assert.Equal(("IE", 256, 0), (results.Location.Country, results.Servers[0].MemoryGb, results.Servers[0].Drives.Ssd));
     }
 }

@@ -194,7 +194,7 @@ public sealed record ComplianceReport(Guid Id, string Name, string Status, Serve
 /// <see cref="ResumeAfter"/>), <c>completed</c> or <c>failed</c>; <see cref="Results"/> once completed.
 /// </summary>
 public sealed record ComplianceRun(
-    int Version, string Status, DateTimeOffset? ResumeAfter, int CreditsUsed, string? Error, Label? Results)
+    int Version, string Status, DateTimeOffset? ResumeAfter, int CreditsUsed, string? Error, ComplianceResults? Results)
 {
     public bool Finished => Status is "completed" or "failed";
 }
@@ -226,11 +226,11 @@ public sealed record Water(
 public sealed record Drives(int Ssd, int Hdd, int Nvme);
 
 /// <summary>Servers alike in everything here, together. <see cref="Status"/>: <c>rated</c>, <c>server_not_found</c>, <c>cpu_not_found</c> or <c>not_reported</c>.</summary>
-public sealed record LabelServer(
+public sealed record ComplianceServer(
     string? Vendor, string? Model, string? Cpu, int? Cpus, int? MemoryGb, string? Gpu, int Quantity, double? Utilisation,
     Drives Drives, string? Grade, string Status, double? AvgPowerW, double? AnnualEnergyKwh);
 
-public sealed record LabelLocation(string? Country, string? Region);
+public sealed record ComplianceLocation(string? Country, string? Region);
 
 /// <summary>The location's grid figures the compliance report used.</summary>
 public sealed record Grid(
@@ -238,10 +238,10 @@ public sealed record Grid(
     int? CarbonIntensityYear,
     [property: JsonPropertyName("water_intensity_l_per_kwh")] double? WaterIntensityLPerKwh);
 
-/// <summary>A completed compliance run's results: the EU data centre label's figures.</summary>
-public sealed record Label(
-    LabelLocation Location, Graded Pue, Graded Wue, string? SchemeVersion, Efficiency Efficiency, Energy Energy,
-    Carbon Carbon, Water Water, Grid Grid, IReadOnlyList<LabelServer> Servers);
+/// <summary>A completed compliance run's results: the figures for the EU compliance report.</summary>
+public sealed record ComplianceResults(
+    ComplianceLocation Location, Graded Pue, Graded Wue, string? SchemeVersion, Efficiency Efficiency, Energy Energy,
+    Carbon Carbon, Water Water, Grid Grid, IReadOnlyList<ComplianceServer> Servers);
 
 // --- Credits ----------------------------------------------------------------------
 

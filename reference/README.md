@@ -78,8 +78,16 @@ All 24 servers rated. Each server's power matches the simulations': a Dell R640 
   intensity. It doesn't count the rest of the site (cooling, networking, storage), so it is
   smaller than the site's total energy times that intensity.
 - **GPU Estate Refresh and GPU Host-to-Host give different energy for the same H100 and L40S
-  servers, by design.** Estate Refresh works out how many new servers are needed and runs them
-  as busy as the old ones. Host-to-Host takes the number you chose and works out how
-  busy that many would be. The new servers then draw a different amount of power, so the
-  energy differs: 32,582 against 29,480 kWh a year for the H100 server. The CPU reports
-  differ in the same way.
+  servers, by design.** Both must do the work of the old GPUs at 60%.
+  - Estate Refresh works out how many new servers that needs, rounds up to whole servers, and
+    runs their GPUs at the same 60%.
+  - Host-to-Host takes the number you chose and works out how busy their GPUs need to be. For
+    the two H100 servers that's about 49%: 16 A100s at 312 TFLOPS and 60% busy, spread over
+    8 H100s at 757 TFLOPS. Two servers are more than the work strictly needs, so their GPUs
+    are less busy than 60%.
+
+  GPUs use most of the power, so Host-to-Host's figure is lower: 29,480 against 32,582 kWh a
+  year for the H100 servers.
+- **In the GPU reports, `host_to_host.new_utilisation` is the CPUs' utilisation, not the
+  GPUs'.** It's 53.85% for the H100 servers: the two new servers' CPUs do the work of the
+  four old ones. The results don't yet include the GPUs' utilisation.
