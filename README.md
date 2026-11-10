@@ -201,4 +201,6 @@ dotnet test dotnet/Interact.PartnerApi.slnx
   (ReDoc and Swagger UI), with the OpenAPI 3.1 description at
   https://partners-staging.interactdc.com/developers/openapi.json, which you
   can generate client code from in most languages.
+- **What's changed:** [CHANGELOG.md](CHANGELOG.md). If you copied the library,
+  check its **Breaking** sections when you update.
 - **Help:** your Interact contact, with the request id of the call in question.

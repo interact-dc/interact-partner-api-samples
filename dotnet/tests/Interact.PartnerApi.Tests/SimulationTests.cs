@@ -179,7 +179,7 @@ public class ComplianceTests : ClientTestBase
     }
 
     [Fact]
-    public async Task A_run_waits_for_its_label_and_reads_it()
+    public async Task A_run_waits_for_its_results_and_reads_them()
     {
         Handler.Token().Then(HttpStatusCode.Created, """
             {"version":1,"status":"completed","resume_after":null,"credits_used":1,"submitted_by":null,
