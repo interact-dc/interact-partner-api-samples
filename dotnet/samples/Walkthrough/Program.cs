@@ -220,27 +220,27 @@ static async Task<int> Walkthrough()
             Console.WriteLine($"   Created {report.Id}: {report.Status}, {report.Servers.Matched} servers matched");
 
             Step(13, "Run it, waiting for the results");
-            var labelRun = await client.StartComplianceRunAsync(user, report.Id, waitSeconds: 10);
-            if (!labelRun.Finished)
+            var complianceRun = await client.StartComplianceRunAsync(user, report.Id, waitSeconds: 10);
+            if (!complianceRun.Finished)
             {
-                Console.WriteLine($"   Still {labelRun.Status} after 10 seconds; following it...");
-                labelRun = await client.WaitForComplianceRunAsync(user, report.Id, labelRun.Version);
+                Console.WriteLine($"   Still {complianceRun.Status} after 10 seconds; following it...");
+                complianceRun = await client.WaitForComplianceRunAsync(user, report.Id, complianceRun.Version);
             }
-            Console.WriteLine($"   Run {labelRun.Version}: {labelRun.Status}, {labelRun.CreditsUsed} credit(s)");
+            Console.WriteLine($"   Run {complianceRun.Version}: {complianceRun.Status}, {complianceRun.CreditsUsed} credit(s)");
 
             Step(14, "Read the results");
-            if (labelRun.Results is not { } label)
+            if (complianceRun.Results is not { } figures)
             {
-                Console.Error.WriteLine($"   No results: {labelRun.Error}");
+                Console.Error.WriteLine($"   No results: {complianceRun.Error}");
                 return 1;
             }
-            Console.WriteLine($"   PUE {label.Pue.Value} (grade {label.Pue.Grade}), WUE {label.Wue.Value} (grade {label.Wue.Grade}), " +
-                              $"scheme {label.SchemeVersion}");
-            var itee = label.Efficiency.Itee;
+            Console.WriteLine($"   PUE {figures.Pue.Value} (grade {figures.Pue.Grade}), WUE {figures.Wue.Value} (grade {figures.Wue.Grade}), " +
+                              $"scheme {figures.SchemeVersion}");
+            var itee = figures.Efficiency.Itee;
             Console.WriteLine($"   ITEE {itee.Value:N0}, over {itee.ServersCovered} of {itee.ServersTotal} servers");
-            Console.WriteLine($"   A year: {label.Energy.TotalKwh:N0} kWh, {label.Carbon.Scope2Kgco2e:N0} kg CO2e (scope 2), " +
-                              $"{label.Water.TotalM3:N0} m3 of water");
-            foreach (var server in label.Servers)
+            Console.WriteLine($"   A year: {figures.Energy.TotalKwh:N0} kWh, {figures.Carbon.Scope2Kgco2e:N0} kg CO2e (scope 2, the servers' electricity), " +
+                              $"{figures.Water.TotalM3:N0} m3 of water");
+            foreach (var server in figures.Servers)
                 Console.WriteLine($"   {server.Quantity} x {server.Vendor} {server.Model}: {server.Status}, grade {server.Grade}");
         }
         else

@@ -47,22 +47,39 @@ Simulations, per target:
 
 | Report | Target | Servers | Energy, kWh a year | Energy saved | Yearly saving | Grade |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1-estate-refresh | Dell PowerEdge R660 (r660) | 22 → 9 | 42,690 → 31,364 | 27% | £29,232 | B → A |
-| 1-estate-refresh | HPE ProLiant DL380 Gen11 (dl380-gen11) | 22 → 8 | 42,690 → 32,372 | 24% | £33,380 | B → A |
-| 2-host-to-host | Dell PowerEdge R660 (r660) | 22 → 10 | 42,690 → 31,934 | 25% | £24,689 | B → A |
-| 2-host-to-host | HPE ProLiant DL380 Gen11 (dl380-gen11) | 22 → 10 | 42,690 → 34,887 | 18% | £23,951 | B → A |
-| 4-gpu-estate-refresh | Dell PowerEdge R760xa (r760xa-h100) | 4 → 2 | 59,424 → 32,582 | 45% | £15,510 | A → A |
-| 4-gpu-estate-refresh | Dell PowerEdge R760xa (r760xa-l40s) | 4 → 4 | 59,424 → 58,017 | 2% | £352 | A → A |
-| 5-gpu-host-to-host | Dell PowerEdge R760xa (r760xa-h100) | 4 → 2 | 59,424 → 29,480 | 50% | £16,286 | A → A |
-| 5-gpu-host-to-host | Dell PowerEdge R760xa (r760xa-l40s) | 4 → 4 | 59,424 → 53,835 | 9% | £1,397 | A → A |
+| 1-estate-refresh | Dell PowerEdge R660 (r660) | 22 → 9 | 42,690 → 31,364 | 27% | £29,231.50 | B → A |
+| 1-estate-refresh | HPE ProLiant DL380 Gen11 (dl380-gen11) | 22 → 8 | 42,690 → 32,372 | 24% | £33,379.50 | B → A |
+| 2-host-to-host | Dell PowerEdge R660 (r660) | 22 → 10 | 42,690 → 31,934 | 25% | £24,689.00 | B → A |
+| 2-host-to-host | HPE ProLiant DL380 Gen11 (dl380-gen11) | 22 → 10 | 42,690 → 34,887 | 18% | £23,950.75 | B → A |
+| 4-gpu-estate-refresh | Dell PowerEdge R760xa (r760xa-h100) | 4 → 2 | 59,424 → 32,582 | 45% | £15,510.50 | A → A |
+| 4-gpu-estate-refresh | Dell PowerEdge R760xa (r760xa-l40s) | 4 → 4 | 59,424 → 58,017 | 2% | £351.75 | A → A |
+| 5-gpu-host-to-host | Dell PowerEdge R760xa (r760xa-h100) | 4 → 2 | 59,424 → 29,480 | 50% | £16,286.00 | A → A |
+| 5-gpu-host-to-host | Dell PowerEdge R760xa (r760xa-l40s) | 4 → 4 | 59,424 → 53,835 | 9% | £1,397.25 | A → A |
 
 Discovery: 24 servers, 920 cores and 9,472 GB of memory;
-72,402 kWh a year, costing £18,100 in energy,
-£28,800 in maintenance and £46,000 in licensing.
+72,402 kWh a year, costing £18,100.50 in energy,
+£28,800.00 in maintenance and £46,000.00 in licensing.
 Servers by grade: A: 2, B: 16, C: 2, D: 4.
 
 The EU compliance report, with the servers in Efficiency mode: PUE 1.4 (grade D), WUE 1.2 (grade G);
 77,865 kWh a year in total (48,388 kWh by the servers);
-6,339 kgCO2e scope 2 and 48,251 kgCO2e scope 3; 196 m³ of water.
+6,339 kgCO2e scope 2 (the servers' own electricity) and 48,251 kgCO2e scope 3; 196 m³ of water.
 All 24 servers rated. Each server's power matches the simulations': a Dell R640 at
 30% utilisation averages about 145 W in both.
+
+## What some figures cover
+
+- **Money is exact.** The API gives each amount to the penny, as a string such as `"29231.50"`.
+  Compare it as it is; don't round it first.
+- **The yearly saving is more than the electricity.** `cost_savings.total` adds the saving on
+  maintenance and licensing to the saving on electricity. `reductions_pct.operating_cost` is the
+  electricity bill only, so in these reports it equals `reductions_pct.energy`.
+- **Scope 2 on the compliance report is the servers' own electricity** times the grid's carbon
+  intensity. It doesn't count the rest of the site (cooling, networking, storage), so it is
+  smaller than the site's total energy times that intensity.
+- **GPU Estate Refresh and GPU Host-to-Host give different energy for the same H100 and L40S
+  servers, by design.** Estate Refresh works out how many new servers are needed and runs them
+  as busy as the old ones. Host-to-Host takes the number you chose and works out how
+  busy that many would be. The new servers then draw a different amount of power, so the
+  energy differs: 32,582 against 29,480 kWh a year for the H100 server. The CPU reports
+  differ in the same way.
