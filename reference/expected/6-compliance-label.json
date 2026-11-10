@@ -8,6 +8,7 @@
         "country": "GB",
         "region": null
       },
+      "bios_setting": "efficiency",
       "pue": {
         "value": 1.4,
         "grade": "D",
@@ -37,20 +38,20 @@
         }
       },
       "energy": {
-        "servers_kwh": 59305,
-        "it_kwh": 68166,
-        "facility_kwh": 27266,
-        "total_kwh": 95433
+        "servers_kwh": 48388,
+        "it_kwh": 55618,
+        "facility_kwh": 22247,
+        "total_kwh": 77865
       },
       "carbon": {
-        "scope2_kgco2e": 7769,
+        "scope2_kgco2e": 6339,
         "scope3_kgco2e": 48251,
         "cue": 0.183
       },
       "water": {
-        "direct_m3": 82,
-        "indirect_m3": 158,
-        "total_m3": 240,
+        "direct_m3": 67,
+        "indirect_m3": 129,
+        "total_m3": 196,
         "methodology_version": "1.1"
       },
       "grid": {
@@ -75,8 +76,8 @@
           },
           "grade": "A",
           "status": "rated",
-          "avg_power_w": 1255.3,
-          "annual_energy_kwh": 21993
+          "avg_power_w": 1131.5,
+          "annual_energy_kwh": 19824
         },
         {
           "vendor": "DELL",
@@ -94,8 +95,8 @@
           },
           "grade": "B",
           "status": "rated",
-          "avg_power_w": 190.8,
-          "annual_energy_kwh": 16714
+          "avg_power_w": 145.6,
+          "annual_energy_kwh": 12757
         },
         {
           "vendor": "DELL",
@@ -113,8 +114,8 @@
           },
           "grade": "B",
           "status": "rated",
-          "avg_power_w": 191.7,
-          "annual_energy_kwh": 10075
+          "avg_power_w": 153.9,
+          "annual_energy_kwh": 8089
         },
         {
           "vendor": "DELL",
@@ -132,8 +133,8 @@
           },
           "grade": "C",
           "status": "rated",
-          "avg_power_w": 210.6,
-          "annual_energy_kwh": 3689
+          "avg_power_w": 157.2,
+          "annual_energy_kwh": 2754
         },
         {
           "vendor": "HPE",
@@ -151,8 +152,8 @@
           },
           "grade": "D",
           "status": "rated",
-          "avg_power_w": 195.0,
-          "annual_energy_kwh": 6833
+          "avg_power_w": 141.7,
+          "annual_energy_kwh": 4964
         }
       ]
     }

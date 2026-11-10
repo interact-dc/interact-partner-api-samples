@@ -61,7 +61,8 @@ Discovery: 24 servers, 920 cores and 9,472 GB of memory;
 £28,800 in maintenance and £46,000 in licensing.
 Servers by grade: A: 2, B: 16, C: 2, D: 4.
 
-The EU compliance label: PUE 1.4 (grade D), WUE 1.2 (grade G);
-95,433 kWh a year in total (59,305 kWh by the servers);
-7,769 kgCO2e scope 2 and 48,251 kgCO2e scope 3; 240 m³ of water.
-All 24 servers rated.
+The EU compliance report, with the servers in Efficiency mode: PUE 1.4 (grade D), WUE 1.2 (grade G);
+77,865 kWh a year in total (48,388 kWh by the servers);
+6,339 kgCO2e scope 2 and 48,251 kgCO2e scope 3; 196 m³ of water.
+All 24 servers rated. Each server's power matches the simulations': a Dell R640 at
+30% utilisation averages about 145 W in both.
