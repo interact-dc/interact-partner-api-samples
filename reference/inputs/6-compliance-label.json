@@ -10,7 +10,8 @@
     "storage_share": 0.08,
     "server_utilisation": 0.3,
     "gpu_utilisation": 0.6,
-    "cooling": "air_liquid"
+    "cooling": "air_liquid",
+    "bios_setting": "efficiency"
   },
   "servers": [
     {

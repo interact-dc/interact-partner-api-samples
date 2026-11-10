@@ -162,12 +162,15 @@ public sealed record WebhookDelivery(
 /// The data centre a compliance report describes. Shares and utilisation are fractions
 /// (0.05 is 5%), to 3 decimal places; PUE and WUE to 2. Decimals, so a figure arrives exactly as
 /// written. Set or replaced as a whole. Countries: <c>GET /v1/catalogue/locations</c>.
+/// <see cref="BiosSetting"/> is how its servers' BIOS is set to use power: <c>efficiency</c> (the
+/// default, as simulations assume) or <c>performance</c>, where power saving is off and idle servers
+/// draw about twice as much.
 /// </summary>
 public sealed record Facility(
     string Country, decimal Pue, decimal Wue, string? Region = null, string? PueSource = null,
     string? WueSource = null, decimal? NetworkingShare = null, decimal? StorageShare = null,
     decimal? ServerUtilisation = null, decimal? GpuUtilisation = null, string? Cooling = null,
-    decimal? CarbonIntensity = null, decimal? WaterIntensity = null);
+    decimal? CarbonIntensity = null, decimal? WaterIntensity = null, string? BiosSetting = null);
 
 /// <summary>
 /// A server in the data centre: a simulation's, with what a label also needs. Its CPU count

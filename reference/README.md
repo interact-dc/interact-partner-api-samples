@@ -17,7 +17,7 @@ figure differs, check first whether we've told you of a model update since that 
 | `3-discovery` | Discovery | The same 22, plus 2 Dell R750xa GPU servers | Nothing: Discovery describes the estate as it is |
 | `4-gpu-estate-refresh` | GPU Estate Refresh | 4 Dell R750xa, each with 4 NVIDIA A100 PCIe 80 GB | Dell R760xa with 4 NVIDIA H100 PCIe 80 GB, and with 4 NVIDIA L40S |
 | `5-gpu-host-to-host` | GPU Host-to-Host | The same 4 R750xa | The H100 server (2 of them) and the L40S server (4 of them) |
-| `6-compliance-label` | EU compliance label | The 22 CPU servers and the 2 GPU servers, with their drives | A UK data centre: PUE 1.4, WUE 1.2, 30% server utilisation |
+| `6-compliance-label` | EU compliance report | The 22 CPU servers and the 2 GPU servers, with their drives | A UK data centre: PUE 1.4, WUE 1.2, 30% server utilisation, servers in Efficiency mode |
 
 Every simulation uses the same assumptions: 30% server utilisation, 60% GPU utilisation, a PUE
 of 1.5, electricity at £0.25 a kWh, maintenance at £1,200 a server and licensing at £50 a core,
