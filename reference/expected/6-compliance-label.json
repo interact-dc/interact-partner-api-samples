@@ -1,0 +1,160 @@
+{
+  "made": "2026-11-10",
+  "run": {
+    "status": "completed",
+    "credits_used": 1,
+    "results": {
+      "location": {
+        "country": "GB",
+        "region": null
+      },
+      "pue": {
+        "value": 1.4,
+        "grade": "D",
+        "source": "reported"
+      },
+      "wue": {
+        "value": 1.2,
+        "grade": "G",
+        "source": "reported"
+      },
+      "scheme_version": "2026-07",
+      "efficiency": {
+        "itee": {
+          "value": 9245,
+          "servers_covered": 24,
+          "servers_total": 24
+        },
+        "iteu": {
+          "value": 30.0,
+          "servers_covered": 24,
+          "servers_total": 24
+        },
+        "perf_cpu": {
+          "value": 279.2,
+          "servers_covered": 24,
+          "servers_total": 24
+        }
+      },
+      "energy": {
+        "servers_kwh": 59305,
+        "it_kwh": 68166,
+        "facility_kwh": 27266,
+        "total_kwh": 95433
+      },
+      "carbon": {
+        "scope2_kgco2e": 7769,
+        "scope3_kgco2e": 48251,
+        "cue": 0.183
+      },
+      "water": {
+        "direct_m3": 82,
+        "indirect_m3": 158,
+        "total_m3": 240,
+        "methodology_version": "1.1"
+      },
+      "grid": {
+        "carbon_intensity_kgco2e_per_kwh": 0.131,
+        "carbon_intensity_year": 2026,
+        "water_intensity_l_per_kwh": 1.6588
+      },
+      "servers": [
+        {
+          "vendor": "Dell",
+          "model": "PowerEdge R750xa",
+          "cpu": "Intel Xeon Gold 6338",
+          "cpus": 2,
+          "memory_gb": 512,
+          "gpu": "A100 PCIe 80 GB",
+          "quantity": 2,
+          "utilisation": 0.3,
+          "drives": {
+            "ssd": 0,
+            "hdd": 0,
+            "nvme": 2
+          },
+          "grade": "A",
+          "status": "rated",
+          "avg_power_w": 1255.3,
+          "annual_energy_kwh": 21993
+        },
+        {
+          "vendor": "DELL",
+          "model": "PowerEdge R640",
+          "cpu": "Intel Xeon Gold 6230",
+          "cpus": 2,
+          "memory_gb": 384,
+          "gpu": null,
+          "quantity": 10,
+          "utilisation": 0.3,
+          "drives": {
+            "ssd": 2,
+            "hdd": 0,
+            "nvme": 0
+          },
+          "grade": "B",
+          "status": "rated",
+          "avg_power_w": 190.8,
+          "annual_energy_kwh": 16714
+        },
+        {
+          "vendor": "DELL",
+          "model": "PowerEdge R740",
+          "cpu": "Intel Xeon Gold 6248",
+          "cpus": 2,
+          "memory_gb": 512,
+          "gpu": null,
+          "quantity": 6,
+          "utilisation": 0.3,
+          "drives": {
+            "ssd": 4,
+            "hdd": 2,
+            "nvme": 0
+          },
+          "grade": "B",
+          "status": "rated",
+          "avg_power_w": 191.7,
+          "annual_energy_kwh": 10075
+        },
+        {
+          "vendor": "DELL",
+          "model": "PowerEdge R630",
+          "cpu": "Intel Xeon Processor E5-2680 v4",
+          "cpus": 2,
+          "memory_gb": 256,
+          "gpu": null,
+          "quantity": 2,
+          "utilisation": 0.3,
+          "drives": {
+            "ssd": 0,
+            "hdd": 2,
+            "nvme": 0
+          },
+          "grade": "C",
+          "status": "rated",
+          "avg_power_w": 210.6,
+          "annual_energy_kwh": 3689
+        },
+        {
+          "vendor": "HPE",
+          "model": "ProLiant DL380 Gen10",
+          "cpu": "Intel Xeon Silver 4214",
+          "cpus": 2,
+          "memory_gb": 256,
+          "gpu": null,
+          "quantity": 4,
+          "utilisation": 0.3,
+          "drives": {
+            "ssd": 2,
+            "hdd": 4,
+            "nvme": 0
+          },
+          "grade": "D",
+          "status": "rated",
+          "avg_power_w": 195.0,
+          "annual_energy_kwh": 6833
+        }
+      ]
+    }
+  }
+}

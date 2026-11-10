@@ -1,0 +1,56 @@
+{
+  "type": "gpu_host_to_host",
+  "name": "Reference: GPU Host-to-Host",
+  "assumptions": {
+    "server_utilisation": 0.3,
+    "gpu_utilisation": 0.6,
+    "pue": 1.5,
+    "currency": "GBP",
+    "energy_cost_per_kwh": "0.2500",
+    "maintenance_cost_per_server": "1200.00",
+    "core_licensing_cost_per_core": "50.00"
+  },
+  "servers": [
+    {
+      "ref": "r750xa",
+      "vendor": "Dell",
+      "model": "PowerEdge R750xa",
+      "cpu": "Intel Xeon Gold 6338",
+      "cpu_count": 2,
+      "memory_gb": 512,
+      "quantity": 4,
+      "gpu": "NVIDIA A100 PCIe 80 GB",
+      "gpu_count": 4,
+      "match": {
+        "vendor": "Dell",
+        "model": "PowerEdge R750xa",
+        "cpu": "Intel Xeon Gold 6338",
+        "gpu": "NVIDIA A100 PCIe 80 GB"
+      }
+    }
+  ],
+  "targets": [
+    {
+      "ref": "r760xa-h100",
+      "vendor": "Dell",
+      "model": "PowerEdge R760xa",
+      "cpu": "Intel Xeon Gold 6448Y",
+      "cpu_count": 2,
+      "memory_gb": 1024,
+      "gpu": "NVIDIA H100 PCIe 80 GB",
+      "gpu_count": 4,
+      "quantity": 2
+    },
+    {
+      "ref": "r760xa-l40s",
+      "vendor": "Dell",
+      "model": "PowerEdge R760xa",
+      "cpu": "Intel Xeon Gold 6448Y",
+      "cpu_count": 2,
+      "memory_gb": 1024,
+      "gpu": "NVIDIA L40S",
+      "gpu_count": 4,
+      "quantity": 4
+    }
+  ]
+}

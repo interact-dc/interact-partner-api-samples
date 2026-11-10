@@ -1,0 +1,88 @@
+{
+  "type": "discovery",
+  "name": "Reference: Discovery",
+  "assumptions": {
+    "server_utilisation": 0.3,
+    "gpu_utilisation": 0.6,
+    "pue": 1.5,
+    "currency": "GBP",
+    "energy_cost_per_kwh": "0.2500",
+    "maintenance_cost_per_server": "1200.00",
+    "core_licensing_cost_per_core": "50.00"
+  },
+  "servers": [
+    {
+      "ref": "r640",
+      "vendor": "DELL",
+      "model": "PowerEdge R640",
+      "cpu": "Intel Xeon Gold 6230",
+      "cpu_count": 2,
+      "memory_gb": 384,
+      "quantity": 10,
+      "match": {
+        "vendor": "DELL",
+        "model": "PowerEdge R640",
+        "cpu": "Intel Xeon Gold 6230"
+      }
+    },
+    {
+      "ref": "r740",
+      "vendor": "DELL",
+      "model": "PowerEdge R740",
+      "cpu": "Intel Xeon Gold 6248",
+      "cpu_count": 2,
+      "memory_gb": 512,
+      "quantity": 6,
+      "match": {
+        "vendor": "DELL",
+        "model": "PowerEdge R740",
+        "cpu": "Intel Xeon Gold 6248"
+      }
+    },
+    {
+      "ref": "dl380-gen10",
+      "vendor": "HPE",
+      "model": "ProLiant DL380 Gen10",
+      "cpu": "Intel Xeon Silver 4214",
+      "cpu_count": 2,
+      "memory_gb": 256,
+      "quantity": 4,
+      "match": {
+        "vendor": "HPE",
+        "model": "ProLiant DL380 Gen10",
+        "cpu": "Intel Xeon Silver 4214"
+      }
+    },
+    {
+      "ref": "r630",
+      "vendor": "DELL",
+      "model": "PowerEdge R630",
+      "cpu": "Intel Xeon Processor E5-2680 v4",
+      "cpu_count": 2,
+      "memory_gb": 256,
+      "quantity": 2,
+      "match": {
+        "vendor": "DELL",
+        "model": "PowerEdge R630",
+        "cpu": "Intel Xeon Processor E5-2680 v4"
+      }
+    },
+    {
+      "ref": "r750xa",
+      "vendor": "Dell",
+      "model": "PowerEdge R750xa",
+      "cpu": "Intel Xeon Gold 6338",
+      "cpu_count": 2,
+      "memory_gb": 512,
+      "quantity": 2,
+      "gpu": "NVIDIA A100 PCIe 80 GB",
+      "gpu_count": 4,
+      "match": {
+        "vendor": "Dell",
+        "model": "PowerEdge R750xa",
+        "cpu": "Intel Xeon Gold 6338",
+        "gpu": "NVIDIA A100 PCIe 80 GB"
+      }
+    }
+  ]
+}

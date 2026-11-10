@@ -9,3 +9,6 @@ TestResults/
 *.pem
 *.key
 *.pfx
+
+# The reference command's run-by-run output (reference/expected is the baseline)
+reference/results/

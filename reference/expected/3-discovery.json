@@ -1,0 +1,155 @@
+{
+  "made": "2026-11-10",
+  "run": {
+    "status": "completed",
+    "credits_used": 1,
+    "results": {
+      "estate": {
+        "servers": 24,
+        "lines": 5,
+        "excluded": [],
+        "unmatched": {
+          "lines": 0,
+          "servers": 0
+        }
+      },
+      "assumptions": {
+        "server_utilisation": 0.3,
+        "server_utilisation_assumed": false,
+        "facility_utilisation": 0.3,
+        "servers_with_own_utilisation": 0,
+        "pue": 1.5,
+        "pue_assumed": false,
+        "gpu_utilisation": 0.6,
+        "carbon_intensity_kg_per_kwh": null,
+        "currency": "GBP",
+        "energy_cost_per_kwh": "0.2500",
+        "energy_cost_assumed": false,
+        "maintenance_cost_per_server": "1200.00",
+        "core_licensing_cost_per_core": "50.00"
+      },
+      "targets": [],
+      "discovery": {
+        "totals": {
+          "servers": 24,
+          "cores": 920,
+          "memory_gb": 9472
+        },
+        "power_kw": {
+          "idle": 2.25,
+          "peak": 11.21
+        },
+        "per_year": {
+          "energy_kwh": 72402.0,
+          "energy_cost": "18100.50",
+          "maintenance_cost": "28800.00",
+          "licensing_cost": "46000.00"
+        },
+        "grades": [
+          {
+            "grade": "A\u002B",
+            "servers": 0,
+            "pct": 0.0
+          },
+          {
+            "grade": "A",
+            "servers": 2,
+            "pct": 8.33
+          },
+          {
+            "grade": "B",
+            "servers": 16,
+            "pct": 66.67
+          },
+          {
+            "grade": "C",
+            "servers": 2,
+            "pct": 8.33
+          },
+          {
+            "grade": "D",
+            "servers": 4,
+            "pct": 16.67
+          },
+          {
+            "grade": "E",
+            "servers": 0,
+            "pct": 0.0
+          },
+          {
+            "grade": "F",
+            "servers": 0,
+            "pct": 0.0
+          },
+          {
+            "grade": "Ungraded",
+            "servers": 0,
+            "pct": 0.0
+          }
+        ],
+        "configurations": [
+          {
+            "vendor": "DELL",
+            "model": "PowerEdge R640",
+            "cpu": "Intel Xeon Gold 6230",
+            "memory_gb": 384,
+            "gpu": null,
+            "gpu_count": 0,
+            "servers": 10,
+            "grade": "B",
+            "gpu_grade": null
+          },
+          {
+            "vendor": "DELL",
+            "model": "PowerEdge R740",
+            "cpu": "Intel Xeon Gold 6248",
+            "memory_gb": 512,
+            "gpu": null,
+            "gpu_count": 0,
+            "servers": 6,
+            "grade": "B",
+            "gpu_grade": null
+          },
+          {
+            "vendor": "HPE",
+            "model": "ProLiant DL380 Gen10",
+            "cpu": "Intel Xeon Silver 4214",
+            "memory_gb": 256,
+            "gpu": null,
+            "gpu_count": 0,
+            "servers": 4,
+            "grade": "D",
+            "gpu_grade": null
+          },
+          {
+            "vendor": "DELL",
+            "model": "PowerEdge R630",
+            "cpu": "Intel Xeon Processor E5-2680 v4",
+            "memory_gb": 256,
+            "gpu": null,
+            "gpu_count": 0,
+            "servers": 2,
+            "grade": "C",
+            "gpu_grade": null
+          },
+          {
+            "vendor": "Dell",
+            "model": "PowerEdge R750xa",
+            "cpu": "Intel Xeon Gold 6338",
+            "memory_gb": 512,
+            "gpu": "NVIDIA A100 PCIe 80 GB",
+            "gpu_count": 4,
+            "servers": 2,
+            "grade": "A",
+            "gpu_grade": "C"
+          }
+        ],
+        "gpu": {
+          "servers": 2,
+          "accelerators": 8,
+          "fp16_tflops": 2496.0
+        }
+      }
+    }
+  }
+}

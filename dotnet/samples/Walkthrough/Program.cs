@@ -10,6 +10,11 @@
 //       then checks a server list, fixes it, creates a simulation, runs it and
 //       reads the results. Reads INTERACT_BASE_URL, INTERACT_CLIENT_ID and
 //       INTERACT_KEY_FILE. The runs spend the tenant's credits.
+//
+//   dotnet run --project dotnet/samples/Walkthrough -- reference [--update] [name ...]
+//       Runs the reference set (reference/inputs: one report of each kind; or only those
+//       named, e.g. 1-estate-refresh) and compares
+//       the results with the expected ones (reference/expected). See reference/README.md.
 
 using Interact.PartnerApi;
 
@@ -17,6 +22,7 @@ return args.FirstOrDefault() switch
 {
     "keygen" => KeyGen(args.ElementAtOrDefault(1) ?? "interact-partner-key.pem"),
     "walkthrough" => await Walkthrough(),
+    "reference" => await Reference(args.Contains("--update"), args.Skip(1).Where(a => !a.StartsWith("--")).ToList()),
     _ => Usage(),
 };
 
@@ -264,6 +270,37 @@ static async Task<int> Walkthrough()
     }
 }
 
+static async Task<int> Reference(bool update, IReadOnlyList<string> only)
+{
+    var baseUrl = Setting("INTERACT_BASE_URL");
+    var clientId = Setting("INTERACT_CLIENT_ID");
+    var keyFile = Setting("INTERACT_KEY_FILE");
+    if (baseUrl is null || clientId is null || keyFile is null) return 1;
+
+    using var key = KeyTools.LoadPrivateKeyPem(File.ReadAllText(keyFile));
+    var client = new PartnerApiClient(new PartnerApiOptions(new Uri(baseUrl.TrimEnd('/') + "/"), clientId, key));
+    var tenantRef = Environment.GetEnvironmentVariable("INTERACT_TENANT") ?? "interact-reference";
+    try
+    {
+        return await ReferenceSet.Run(client, tenantRef, update, only);
+    }
+    catch (PartnerApiException error) when (error.Code == "insufficient_pool_credits")
+    {
+        Console.Error.WriteLine($"Your credit pool holds {error.CreditsAvailable} credits, too few for the reference runs: ask Interact to top it up.");
+        return 1;
+    }
+    catch (PartnerApiException error)
+    {
+        Console.Error.WriteLine($"The API refused a call: {error.Message}");
+        return 1;
+    }
+    catch (TokenRequestException error)
+    {
+        Console.Error.WriteLine($"{error.Message}. Quote the request id to Interact to find out why.");
+        return 1;
+    }
+}
+
 static string? Setting(string name)
 {
     var value = Environment.GetEnvironmentVariable(name);
@@ -290,6 +327,6 @@ static string Describe(MatchResult result) => result.Status switch
 
 static int Usage()
 {
-    Console.Error.WriteLine("Usage: Walkthrough keygen [key.pem] | walkthrough");
+    Console.Error.WriteLine("Usage: Walkthrough keygen [key.pem] | walkthrough | reference [--update] [name ...]");
     return 2;
 }

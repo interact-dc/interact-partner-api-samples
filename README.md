@@ -70,6 +70,16 @@ compliance) it:
 one for the compliance label, so the walkthrough needs two. A new tenant has
 none: ask Interact to add some to your test tenant before step 9.
 
+### Check your results against ours
+
+[`reference/`](reference/README.md) holds a fixed input for each kind of report and the results it
+gives on the staging sandbox. Send them through your own system and compare what you get, and what
+your app shows; or run them with the sample:
+
+```sh
+dotnet run --project dotnet/samples/Walkthrough -- reference
+```
+
 ### 3. Use the library in your system
 
 `dotnet/src/Interact.PartnerApi` is a small library you can copy or reference:

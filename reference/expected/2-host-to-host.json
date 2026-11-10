@@ -1,0 +1,140 @@
+{
+  "made": "2026-11-10",
+  "run": {
+    "status": "completed",
+    "credits_used": 2,
+    "results": {
+      "estate": {
+        "servers": 22,
+        "lines": 4,
+        "excluded": [],
+        "unmatched": {
+          "lines": 0,
+          "servers": 0
+        }
+      },
+      "assumptions": {
+        "server_utilisation": 0.3,
+        "server_utilisation_assumed": false,
+        "facility_utilisation": 0.3,
+        "servers_with_own_utilisation": 0,
+        "pue": 1.5,
+        "pue_assumed": false,
+        "gpu_utilisation": 0.6,
+        "carbon_intensity_kg_per_kwh": 0.24,
+        "currency": "GBP",
+        "energy_cost_per_kwh": "0.2500",
+        "energy_cost_assumed": false,
+        "maintenance_cost_per_server": "1200.00",
+        "core_licensing_cost_per_core": "50.00"
+      },
+      "targets": [
+        {
+          "ref": "r660",
+          "vendor": "Dell",
+          "model": "PowerEdge R660",
+          "status": "completed",
+          "error": null,
+          "servers": {
+            "current": 22,
+            "new": 10
+          },
+          "energy_kwh_per_year": {
+            "current": 42690,
+            "new": 31934
+          },
+          "carbon_kg_per_year": {
+            "new": 7664
+          },
+          "cores": {
+            "current": 792,
+            "new": 640
+          },
+          "memory_gb": {
+            "current": 8448,
+            "new": 5120
+          },
+          "grade": {
+            "current": "B",
+            "new": "A"
+          },
+          "reductions_pct": {
+            "servers": 55,
+            "energy": 25,
+            "carbon": 25,
+            "operating_cost": 25
+          },
+          "cost_savings": {
+            "current_cost": "76672.50",
+            "new_cost": "51983.50",
+            "total": "24689.00",
+            "energy": "2689.00",
+            "maintenance": "14400.00",
+            "licensing": "7600.00",
+            "total_pct": 32.2
+          },
+          "host_to_host": {
+            "quantity": 10,
+            "current_utilisation": 0.3,
+            "new_utilisation": 0.2528,
+            "spare_capacity_pct": 74.7,
+            "performance_change_pct": 18.7
+          }
+        },
+        {
+          "ref": "dl380-gen11",
+          "vendor": "HPE",
+          "model": "ProLiant DL380 Gen11",
+          "status": "completed",
+          "error": null,
+          "servers": {
+            "current": 22,
+            "new": 10
+          },
+          "energy_kwh_per_year": {
+            "current": 42690,
+            "new": 34887
+          },
+          "carbon_kg_per_year": {
+            "new": 8373
+          },
+          "cores": {
+            "current": 792,
+            "new": 640
+          },
+          "memory_gb": {
+            "current": 8448,
+            "new": 5120
+          },
+          "grade": {
+            "current": "B",
+            "new": "A"
+          },
+          "reductions_pct": {
+            "servers": 55,
+            "energy": 18,
+            "carbon": 18,
+            "operating_cost": 18
+          },
+          "cost_savings": {
+            "current_cost": "76672.50",
+            "new_cost": "52721.75",
+            "total": "23950.75",
+            "energy": "1950.75",
+            "maintenance": "14400.00",
+            "licensing": "7600.00",
+            "total_pct": 31.2
+          },
+          "host_to_host": {
+            "quantity": 10,
+            "current_utilisation": 0.3,
+            "new_utilisation": 0.2221,
+            "spare_capacity_pct": 77.8,
+            "performance_change_pct": 35.1
+          }
+        }
+      ],
+      "discovery": null
+    }
+  }
+}

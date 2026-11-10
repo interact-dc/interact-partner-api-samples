@@ -1,0 +1,128 @@
+{
+  "made": "2026-11-10",
+  "run": {
+    "status": "completed",
+    "credits_used": 2,
+    "results": {
+      "estate": {
+        "servers": 4,
+        "lines": 1,
+        "excluded": [],
+        "unmatched": {
+          "lines": 0,
+          "servers": 0
+        }
+      },
+      "assumptions": {
+        "server_utilisation": 0.3,
+        "server_utilisation_assumed": false,
+        "facility_utilisation": 0.3,
+        "servers_with_own_utilisation": 0,
+        "pue": 1.5,
+        "pue_assumed": false,
+        "gpu_utilisation": 0.6,
+        "carbon_intensity_kg_per_kwh": 0.24,
+        "currency": "GBP",
+        "energy_cost_per_kwh": "0.2500",
+        "energy_cost_assumed": false,
+        "maintenance_cost_per_server": "1200.00",
+        "core_licensing_cost_per_core": "50.00"
+      },
+      "targets": [
+        {
+          "ref": "r760xa-h100",
+          "vendor": "Dell",
+          "model": "PowerEdge R760xa",
+          "status": "completed",
+          "error": null,
+          "servers": {
+            "current": 4,
+            "new": 2
+          },
+          "energy_kwh_per_year": {
+            "current": 59424,
+            "new": 32582
+          },
+          "carbon_kg_per_year": {
+            "new": 7820
+          },
+          "cores": {
+            "current": 256,
+            "new": 128
+          },
+          "memory_gb": {
+            "current": 2048,
+            "new": 2048
+          },
+          "grade": {
+            "current": "A",
+            "new": "A"
+          },
+          "reductions_pct": {
+            "servers": 50,
+            "energy": 45,
+            "carbon": 45,
+            "operating_cost": 45
+          },
+          "cost_savings": {
+            "current_cost": "32456.00",
+            "new_cost": "16945.50",
+            "total": "15510.50",
+            "energy": "6710.50",
+            "maintenance": "2400.00",
+            "licensing": "6400.00",
+            "total_pct": 47.8
+          },
+          "host_to_host": null
+        },
+        {
+          "ref": "r760xa-l40s",
+          "vendor": "Dell",
+          "model": "PowerEdge R760xa",
+          "status": "completed",
+          "error": null,
+          "servers": {
+            "current": 4,
+            "new": 4
+          },
+          "energy_kwh_per_year": {
+            "current": 59424,
+            "new": 58017
+          },
+          "carbon_kg_per_year": {
+            "new": 13924
+          },
+          "cores": {
+            "current": 256,
+            "new": 256
+          },
+          "memory_gb": {
+            "current": 2048,
+            "new": 4096
+          },
+          "grade": {
+            "current": "A",
+            "new": "A"
+          },
+          "reductions_pct": {
+            "servers": 0,
+            "energy": 2,
+            "carbon": 2,
+            "operating_cost": 2
+          },
+          "cost_savings": {
+            "current_cost": "32456.00",
+            "new_cost": "32104.25",
+            "total": "351.75",
+            "energy": "351.75",
+            "maintenance": "0.00",
+            "licensing": "0.00",
+            "total_pct": 1.1
+          },
+          "host_to_host": null
+        }
+      ],
+      "discovery": null
+    }
+  }
+}
