@@ -38,7 +38,7 @@ Staging is at `https://partners-staging.interactdc.com`. You move to
    one of its users, looks up
    hardware, checks a server list and fixes it, then creates a simulation,
    runs it and prints the results. If your plan includes EU compliance, it
-   then makes a compliance label for the same servers. If it runs green, your key, client id and
+   then makes a compliance report for the same servers. If it runs green, your key, client id and
    network path all work.
 4. **Build the same flow in your system**, using the sample's code or a
    client generated from the OpenAPI description:

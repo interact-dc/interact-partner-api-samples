@@ -1,6 +1,6 @@
 # How it works
 
-Interact lets organisations model the compute capacity, energy use and number of servers their infrastructure workloads need. It also produces compliance reports, such as the EU compliance label. Customers use it through the Interact portal, where they sign in and work directly.
+Interact lets organisations model the compute capacity, energy use and number of servers their infrastructure workloads need. It also produces compliance reports, such as the EU compliance report. Customers use it through the Interact portal, where they sign in and work directly.
 
 The partner API gives partners the same capabilities from inside their own platform. Each of your customers gets a tenant in Interact, your users sign in with you, and your app defines simulations, runs them and reads the results. There is one standard API, the same for every partner.
 
@@ -92,7 +92,7 @@ The settings tune the model: server and GPU utilisation, PUE, energy cost per kW
 
 **Each server's own utilisation.** Where we have enabled it for a tenant, you can send a server's measured average utilisation, from its monitoring for example, as `utilisation`, a fraction. A server without one uses the simulation's `server_utilisation`, the figure for the facility. Each server's own figure sets its power draw today. Together, weighted by each server's capacity, the figures give the share of the estate's capacity in use: its workload. Each target is evaluated against that workload on its own, just as it is against the facility figure. A run's assumptions say how many servers used their own figure (`servers_with_own_utilisation`) and the figure the rest used (`facility_utilisation`). Their `server_utilisation` is the capacity-weighted figure the targets were evaluated against. Without any figures of their own, every server uses the facility figure, and the results are exactly what they would have been. For a tenant without per-server utilisation, a server sent with `utilisation` is refused.
 
-A compliance report rates one data centre against the EU Energy Efficiency Directive, giving its PUE and WUE on an A to G scale with its energy, carbon and water figures. Instead of targets it takes the data centre's location and facility figures: PUE, WUE, cooling, server utilisation, and the share of power drawn by networking and storage, as fractions. It also takes the servers' power profile, `bios_setting`: `efficiency` (the default, as simulations assume) or `performance`, where the servers' power saving is off and idle servers draw about twice as much. Its servers are settled exactly as a simulation's are, and each gives its CPU count and memory, plus its drives and, if you know it, its own utilisation. A run costs one credit however many servers there are, and returns the label: each fleet figure says how many of the servers it covers, and each server says whether it was rated.
+A compliance report rates one data centre against the EU Energy Efficiency Directive, giving its PUE and WUE on an A to G scale with its energy, carbon and water figures. Instead of targets it takes the data centre's location and facility figures: PUE, WUE, cooling, server utilisation, and the share of power drawn by networking and storage, as fractions. It also takes the servers' power profile, `bios_setting`: `efficiency` (the default, as simulations assume) or `performance`, where the servers' power saving is off and idle servers draw about twice as much. Its servers are settled exactly as a simulation's are, and each gives its CPU count and memory, plus its drives and, if you know it, its own utilisation. A run costs one credit however many servers there are, and returns the results: each fleet figure says how many of the servers it covers, and each server says whether it was rated.
 
 **Why matching comes first.** We can only model hardware we know, so every current server is matched to our catalogue before a simulation is created. First you check the list: we say how each server matched, with alternatives for any we are unsure of. Your app then lets the user settle each one or take it out, as often as they need. Then you send the list with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results.
 
@@ -134,5 +134,5 @@ The API reference, as ReDoc or Swagger UI, is live for the staging sandbox at [p
 | Staging sandbox | Built |
 | Hardware catalogue and matching | Built |
 | Simulations, runs and results | Built |
-| Webhooks for runs, compliance labels, tenant changes and low credits | Built |
-| EU compliance labels | Built |
+| Webhooks for runs, compliance reports, tenant changes and low credits | Built |
+| EU compliance reports | Built |

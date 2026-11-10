@@ -216,10 +216,10 @@ static async Task<int> Walkthrough()
                 s.MemoryGb ?? throw new InvalidOperationException($"{s.Ref} has no memory"),
                 Quantity: s.Quantity, SsdDrives: 2, Match: s.Match)).ToList();
             var report = await client.CreateComplianceReportAsync(user, new ComplianceReportRequest(
-                "Sample data centre label", dataCentre, servers));
+                "Sample data centre", dataCentre, servers));
             Console.WriteLine($"   Created {report.Id}: {report.Status}, {report.Servers.Matched} servers matched");
 
-            Step(13, "Run it, waiting for the label");
+            Step(13, "Run it, waiting for the results");
             var labelRun = await client.StartComplianceRunAsync(user, report.Id, waitSeconds: 10);
             if (!labelRun.Finished)
             {
@@ -228,10 +228,10 @@ static async Task<int> Walkthrough()
             }
             Console.WriteLine($"   Run {labelRun.Version}: {labelRun.Status}, {labelRun.CreditsUsed} credit(s)");
 
-            Step(14, "Read the label");
+            Step(14, "Read the results");
             if (labelRun.Results is not { } label)
             {
-                Console.Error.WriteLine($"   No label: {labelRun.Error}");
+                Console.Error.WriteLine($"   No results: {labelRun.Error}");
                 return 1;
             }
             Console.WriteLine($"   PUE {label.Pue.Value} (grade {label.Pue.Grade}), WUE {label.Wue.Value} (grade {label.Wue.Grade}), " +

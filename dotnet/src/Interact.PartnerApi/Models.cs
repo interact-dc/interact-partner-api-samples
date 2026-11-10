@@ -173,8 +173,8 @@ public sealed record Facility(
     decimal? CarbonIntensity = null, decimal? WaterIntensity = null, string? BiosSetting = null);
 
 /// <summary>
-/// A server in the data centre: a simulation's, with what a label also needs. Its CPU count
-/// and memory are required: without them it would add nothing to the label.
+/// A server in the data centre: a simulation's, with what a compliance report also needs. Its CPU count
+/// and memory are required: without them it would add nothing to the compliance report.
 /// </summary>
 public sealed record ComplianceServerLine(
     string Ref, string Vendor, string Model, string? Cpu, int CpuCount, int MemoryGb, string? Gpu = null,
@@ -199,7 +199,7 @@ public sealed record ComplianceRun(
     public bool Finished => Status is "completed" or "failed";
 }
 
-/// <summary>A figure the label grades, A to G.</summary>
+/// <summary>A figure the compliance report grades, A to G.</summary>
 public sealed record Graded(double? Value, string? Grade, string? Source);
 
 /// <summary>A fleet figure, and how many of the servers it was worked out over.</summary>
@@ -216,7 +216,7 @@ public sealed record Carbon(
     [property: JsonPropertyName("scope3_kgco2e")] long? Scope3Kgco2e,
     double? Cue);
 
-/// <summary>A year's water. Compare volumes only between labels of the same methodology version.</summary>
+/// <summary>A year's water. Compare volumes only between compliance reports of the same methodology version.</summary>
 public sealed record Water(
     [property: JsonPropertyName("direct_m3")] long? DirectM3,
     [property: JsonPropertyName("indirect_m3")] long? IndirectM3,
@@ -232,13 +232,13 @@ public sealed record LabelServer(
 
 public sealed record LabelLocation(string? Country, string? Region);
 
-/// <summary>The location's grid figures the label used.</summary>
+/// <summary>The location's grid figures the compliance report used.</summary>
 public sealed record Grid(
     [property: JsonPropertyName("carbon_intensity_kgco2e_per_kwh")] double? CarbonIntensityKgco2ePerKwh,
     int? CarbonIntensityYear,
     [property: JsonPropertyName("water_intensity_l_per_kwh")] double? WaterIntensityLPerKwh);
 
-/// <summary>A completed run's EU data centre label.</summary>
+/// <summary>A completed compliance run's results: the EU data centre label's figures.</summary>
 public sealed record Label(
     LabelLocation Location, Graded Pue, Graded Wue, string? SchemeVersion, Efficiency Efficiency, Energy Energy,
     Carbon Carbon, Water Water, Grid Grid, IReadOnlyList<LabelServer> Servers);

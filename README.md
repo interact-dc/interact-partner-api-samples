@@ -62,12 +62,12 @@ compliance) it:
 11. creates an EU compliance report for the data centre those servers are in,
     with its facility figures (PUE, WUE, networking and storage shares,
     utilisation);
-12. runs it, waiting for the label;
-13. prints the label: PUE and WUE with their grades, ITEE and how many servers
+12. runs it, waiting for the results;
+13. prints the results: PUE and WUE with their grades, ITEE and how many servers
     it covers, and a year's energy, carbon and water.
 
 **Runs spend the tenant's credits:** one per target for the simulation, and
-one for the compliance label, so the walkthrough needs two. A new tenant has
+one for the compliance report, so the walkthrough needs two. A new tenant has
 none: ask Interact to add some to your test tenant before step 9.
 
 ### Check your results against ours

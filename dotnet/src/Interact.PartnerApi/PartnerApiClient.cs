@@ -171,7 +171,7 @@ public sealed class PartnerApiClient
 
     /// <summary>
     /// Start a compliance run, charging one credit, and wait up to <paramref name="waitSeconds"/>
-    /// (at most 10) for its label. A run still going when the wait ends comes back unfinished:
+    /// (at most 10) for its results. A run still going when the wait ends comes back unfinished:
     /// follow it with <see cref="WaitForComplianceRunAsync"/>.
     /// </summary>
     public Task<ComplianceRun> StartComplianceRunAsync(PartnerUser user, Guid reportId, int waitSeconds = 10,
