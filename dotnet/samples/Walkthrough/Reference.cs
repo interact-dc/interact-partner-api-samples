@@ -37,14 +37,20 @@ static class ReferenceSet
                                          path => JsonNode.Parse(File.ReadAllText(path))!.AsObject());
 
         Console.WriteLine($"Tenant {tenantRef}");
-        try
+        var tenant = await TenantSetup.PutAsync(client, tenantRef, "Interact reference");
+        if (!tenant.Modules.Effective.Contains("compliance"))
         {
-            await client.PutTenantAsync(tenantRef, new TenantRequest("Interact reference", ["simulations", "compliance"]));
+            bodies = bodies.Where(entry => entry.Value.ContainsKey("type"))
+                           .ToDictionary(entry => entry.Key, entry => entry.Value);
         }
-        catch (PartnerApiException refused) when (refused.Code == "validation_failed")
+        if (!tenant.Has("gpu_support"))
         {
-            Console.WriteLine("   Your plan doesn't include EU compliance: that report is left out.");
-            await client.PutTenantAsync(tenantRef, new TenantRequest("Interact reference", ["simulations"]));
+            // The GPU reports need it; the others' GPU servers are taken without their GPUs,
+            // so their figures won't match the expected ones.
+            bodies = bodies.Where(entry => entry.Value["type"]?.GetValue<string>()?.StartsWith("gpu_") != true)
+                           .ToDictionary(entry => entry.Key, entry => entry.Value);
+            Console.WriteLine("   Without GPU support, the GPU reports are left out, and the GPU servers in the others " +
+                              "are taken without their GPUs: expect their figures to differ.");
         }
 
         // A simulation costs a credit per target (Discovery one); a compliance run one.
@@ -119,6 +125,7 @@ static class ReferenceSet
     private static async Task<JsonObject> Simulation(PartnerApiClient client, PartnerUser user, JsonObject body)
     {
         var created = await client.SendAsync<JsonElement>(HttpMethod.Post, $"tenants/{user.Tenant}/simulations", body, user);
+        Warn(created);
         var id = created.GetProperty("id").GetGuid();
         var run = await client.StartRunAsync(user, id);
         if (!run.Finished) run = await client.WaitForRunAsync(user, id, run.Version);
@@ -129,11 +136,22 @@ static class ReferenceSet
     private static async Task<JsonObject> Compliance(PartnerApiClient client, PartnerUser user, JsonObject body)
     {
         var created = await client.SendAsync<JsonElement>(HttpMethod.Post, $"tenants/{user.Tenant}/compliance-reports", body, user);
+        Warn(created);
         var id = created.GetProperty("id").GetGuid();
         var run = await client.StartComplianceRunAsync(user, id);
         if (!run.Finished) run = await client.WaitForComplianceRunAsync(user, id, run.Version);
         var read = await client.SendAsync<JsonElement>(HttpMethod.Get, $"tenants/{user.Tenant}/compliance-reports/{id}/runs/{run.Version}", user: user);
         return JsonNode.Parse(read.GetRawText())!.AsObject();
+    }
+
+    // What was taken but ignored, such as GPUs for a tenant without GPU support.
+    private static void Warn(JsonElement created)
+    {
+        if (!created.TryGetProperty("warnings", out var warnings)) return;
+        foreach (var warning in warnings.EnumerateArray())
+        {
+            Console.WriteLine($"   Ignored {warning.GetProperty("pointer").GetString()}: {warning.GetProperty("detail").GetString()}");
+        }
     }
 
     // Every place where what was found differs from what was expected, by its path in the results.

@@ -3,6 +3,29 @@
 What changed in these samples, newest first. If you copied the C# library into your own system,
 check **Breaking** first: those are the changes your code may need.
 
+## Unreleased
+
+### Breaking
+
+- **A tenant without GPU support no longer keeps GPU input.** GPUs on servers, a server's own GPU
+  utilisation, and a simulation's or compliance facility's GPU utilisation are taken but ignored
+  for such a tenant, where the API used to keep them. The request still succeeds; each one
+  ignored is named in the response's new `warnings`. `GET /v1/catalogue/gpus` answers
+  `403 feature_not_enabled` without GPU support. If your tenants send GPU data, ask us to add
+  GPU support to your plan, then switch it on for those tenants (below).
+
+### Added
+
+- **Features you switch on per tenant.** `TenantRequest.Flags` sends the features a tenant should
+  have, within your plan: `gpu_support` and `per_server_utilisation`. Leave it null to keep what
+  the tenant has. `Tenant.Flags` gives what you asked for and what the tenant has, `Tenant.Has`
+  answers for one feature, and `Me.Flags` lists the user's tenant's features.
+- **`Simulation.Warnings` and `ComplianceReport.Warnings`** (`InputWarning`): what was taken but
+  ignored, with a JSON Pointer to it. They come back when a simulation or report is created or
+  changed, and when servers are added.
+- The walkthrough and the reference runner switch GPU support on for their tenant where your
+  plan includes it, print any warnings, and leave the GPU reports out where it doesn't.
+
 ## 2026-11-10
 
 ### Breaking

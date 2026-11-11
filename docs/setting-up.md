@@ -8,7 +8,7 @@ Steps 1 to 8 happen on staging; steps 9 to 11 repeat the key steps for productio
 
 | Step | Who | What happens |
 | --- | --- | --- |
-| 1 | Interact | We create your partner account: the modules your customers can use and how many tenants you can have, as agreed |
+| 1 | Interact | We create your partner account: the modules and features your customers can use and how many tenants you can have, as agreed |
 | 2 | You | Create a key pair for staging and keep the private key safe |
 | 3 | You | Send us the items under [What we need from you](#what-we-need-from-you) |
 | 4 | Interact | We register your staging system and send you its client id and the addresses you need |
@@ -58,9 +58,9 @@ Everything is live on staging, simulations included, so you can build and prove 
 | --- | --- | --- |
 | 1. Your system gets a token | `POST /oauth/token` with `grant_type=client_credentials` and your signed request as `client_assertion` | 200 with an `access_token` that lasts 10 minutes |
 | 2. The token works | `GET /v1/ping` | 200, naming your client and its scopes |
-| 3. You can create a tenant | `PUT /v1/tenants/{tenant}` with a name and `"modules": ["simulations"]` | 201 the first time, 200 when repeated |
+| 3. You can create a tenant | `PUT /v1/tenants/{tenant}` with a name and `"modules": ["simulations"]`, and `"flags": ["gpu_support"]` if your plan has GPU support | 201 the first time, 200 when repeated; `flags.effective` lists the features it has |
 | 4. A user can sign in | `POST /oauth/token` with `grant_type=urn:ietf:params:oauth:grant-type:token-exchange` and a signed statement about the user, then `GET /v1/tenants/{tenant}/me` with the token you get back | 200 with the user's name and role |
-| 5. You can look up hardware | `GET /v1/catalogue/vendors`, `servers`, `cpus`, `gpus` and `locations` | Results come in pages; follow `next` until it is null |
+| 5. You can look up hardware | `GET /v1/catalogue/vendors`, `servers`, `cpus`, `gpus` and `locations` | Results come in pages; follow `next` until it is null. `gpus` needs GPU support: without it, 403 `feature_not_enabled` |
 | 6. You can check a server list | `POST /v1/catalogue/match` with up to 500 rows of vendor, model, CPU and GPU | Each row comes back `matched`, `needs_review` with alternatives, or `unmatched` |
 | 7. You can manage users | `GET /v1/tenants/{tenant}/users`, then `DELETE` and `POST .../reactivate` on one user | A deactivated user gets no token until reactivated |
 | 8. You can see a tenant's account | `GET /v1/tenants/{tenant}/credits` and `/usage` | 200 with the balance and use by month |
@@ -73,6 +73,8 @@ Everything is live on staging, simulations included, so you can build and prove 
 | 15. A finished run tells you | Run a simulation as in check 13, without waiting | Your receiver gets `run.completed`, verifies it, and reads the run at its `path` |
 | 16. A compliance report can be made (EU compliance plans) | Create a tenant with `"modules": ["simulations", "compliance"]`, then `POST /v1/tenants/{tenant}/compliance-reports` with a `facility` (country, PUE, WUE) and settled servers, each with its CPU count and memory | 201, status `ready` |
 | 17. You can run it and read the results | `POST .../compliance-reports/{id}/runs` with `Prefer: wait=10`; if it answers 202, `GET` its `Location`, or wait for `compliance_report.completed` | The run is `completed`, with PUE and WUE graded, ITEE, ITEU and PerfCPU with their coverage, energy, carbon, water, and the servers |
+
+**Features.** Some features are switched on per tenant: **GPU support** (`gpu_support`: the GPU simulation types, GPUs on servers, GPU utilisation and the GPU catalogue) and **per-server utilisation** (`per_server_utilisation`). We include them in your plan as agreed; you choose which tenants get them, with `flags` when you create or update a tenant. Leave `flags` out to keep what the tenant has. A tenant without GPU support can still be sent servers with GPUs: they are taken without their GPUs, and the response's `warnings` say which (`gpu_ignored`, pointing at each). GPU utilisation sent for such a tenant is ignored and named in `warnings` the same way.
 
 Checks 6, 11 and 12 are how every simulation starts. Your users build the server list, you check it, and they settle each server (the suggestion, an alternative, or one from the catalogue pickers) or take it out. Then you send it with each server's match. A simulation is only created when every server is settled, so no server is ever quietly left out of the results. A run spends the tenant's credits, one per target: we add credits to your test tenant.
 
