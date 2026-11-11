@@ -8,17 +8,26 @@ namespace Interact.PartnerApi;
 
 /// <summary>
 /// The body of <c>PUT /v1/tenants/{tenant_ref}</c>. <see cref="InitialCredits"/> come from your pool
-/// when the tenant is created; they are ignored when it already exists.
+/// when the tenant is created; they are ignored when it already exists. <see cref="Flags"/> are the
+/// features you switch on for the tenant, within your plan (<c>gpu_support</c>,
+/// <c>per_server_utilisation</c>); leave them null to keep those it has.
 /// </summary>
 public sealed record TenantRequest(string Name, IReadOnlyList<string> Modules, int? RetentionDays = null,
-                                   int? InitialCredits = null);
+                                   int? InitialCredits = null, IReadOnlyList<string>? Flags = null);
 
 public sealed record TenantModules(IReadOnlyList<string> Requested, IReadOnlyList<string> Effective);
+
+/// <summary>The features you switched on for a tenant, and those it has: switched on, within your plan.</summary>
+public sealed record TenantFlags(IReadOnlyList<string> Requested, IReadOnlyList<string> Effective);
 
 public sealed record Tenant(
     string TenantRef, string Name, string Status, string PlatformStatus, bool Active,
     TenantModules Modules, string Assurance, int RetentionDays,
-    DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+    DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, TenantFlags? Flags = null)
+{
+    /// <summary>Whether the tenant has a feature now, such as <c>gpu_support</c>.</summary>
+    public bool Has(string flag) => Flags?.Effective.Contains(flag) ?? false;
+}
 
 /// <summary>One page of a list. Pass <see cref="NextCursor"/> back as the cursor until it is null.</summary>
 public sealed record Page<T>(IReadOnlyList<T> Items, string? NextCursor, string? Next);
@@ -26,7 +35,8 @@ public sealed record Page<T>(IReadOnlyList<T> Items, string? NextCursor, string?
 public sealed record Me(
     Guid Id, string Subject, string Role, string Name, string Email,
     DateTimeOffset CreatedAt, DateTimeOffset? LastSeenAt, DateTimeOffset? DeactivatedAt,
-    string Tenant, IReadOnlyList<string> Modules, IReadOnlyList<string> Scopes, int CreditBalance);
+    string Tenant, IReadOnlyList<string> Modules, IReadOnlyList<string> Scopes, int CreditBalance,
+    IReadOnlyList<string>? Flags = null);
 
 public sealed record Ping(
     string Partner, string ClientId, IReadOnlyList<string> Scopes,
@@ -95,8 +105,18 @@ public sealed record SimulationRequest(
 
 public sealed record ServerCounts(int Total, int Matched, int NeedsReview, int Unmatched, int Excluded, int Pending);
 
-/// <summary>A simulation. <see cref="Status"/> is <c>ready</c> once its servers are settled.</summary>
-public sealed record Simulation(Guid Id, string Type, string Name, string Status, ServerCounts Servers);
+/// <summary>
+/// Something you sent that was taken but ignored, and why: <see cref="Pointer"/> is a JSON Pointer into
+/// your request. <see cref="Code"/> <c>gpu_ignored</c>: GPU input, for a tenant without GPU support.
+/// </summary>
+public sealed record InputWarning(string Pointer, string Code, string Detail);
+
+/// <summary>
+/// A simulation. <see cref="Status"/> is <c>ready</c> once its servers are settled. <see cref="Warnings"/>
+/// come back when it is created or changed, or servers are added.
+/// </summary>
+public sealed record Simulation(Guid Id, string Type, string Name, string Status, ServerCounts Servers,
+                                IReadOnlyList<InputWarning>? Warnings = null);
 
 // --- Runs and their results ---------------------------------------------------------
 
@@ -186,8 +206,12 @@ public sealed record ComplianceReportRequest(
     string Name, Facility? Facility = null, IReadOnlyList<ComplianceServerLine>? Servers = null,
     string? Visibility = null, string? CustomerName = null, string? CustomerReference = null, string? Notes = null);
 
-/// <summary>A compliance report. <see cref="Status"/> is <c>ready</c> once it has servers, settled, and its facility.</summary>
-public sealed record ComplianceReport(Guid Id, string Name, string Status, ServerCounts Servers, Facility? Facility);
+/// <summary>
+/// A compliance report. <see cref="Status"/> is <c>ready</c> once it has servers, settled, and its facility.
+/// <see cref="Warnings"/> come back when it is created or changed, or servers are added.
+/// </summary>
+public sealed record ComplianceReport(Guid Id, string Name, string Status, ServerCounts Servers, Facility? Facility,
+                                      IReadOnlyList<InputWarning>? Warnings = null);
 
 /// <summary>
 /// A compliance run. <see cref="Status"/> is <c>running</c>, <c>paused</c> (until

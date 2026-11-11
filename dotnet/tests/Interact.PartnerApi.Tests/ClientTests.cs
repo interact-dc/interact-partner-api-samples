@@ -135,6 +135,32 @@ public class ApiCallTests : ClientTestBase
     }
 
     [Fact]
+    public async Task Putting_a_tenant_sends_the_features_switched_on_and_reads_back_those_it_has()
+    {
+        Handler.Token().Then(HttpStatusCode.Created, TenantJson.Replace(
+            "\"assurance\"", "\"flags\":{\"requested\":[\"gpu_support\"],\"effective\":[\"gpu_support\"]},\"assurance\""));
+
+        var tenant = await Client().PutTenantAsync("contoso", new TenantRequest("Contoso Ltd", ["simulations"],
+                                                                                Flags: ["gpu_support"]));
+
+        using var body = JsonDocument.Parse(Handler.Sent[1].Body);
+        Assert.Equal("gpu_support", body.RootElement.GetProperty("flags")[0].GetString());
+        Assert.True(tenant.Has("gpu_support"));
+    }
+
+    [Fact]
+    public async Task Features_left_unset_are_not_sent_so_the_tenant_keeps_its_own()
+    {
+        Handler.Token().Then(HttpStatusCode.Created, TenantJson);
+
+        var tenant = await Client().PutTenantAsync("contoso", new TenantRequest("Contoso Ltd", ["simulations"]));
+
+        using var body = JsonDocument.Parse(Handler.Sent[1].Body);
+        Assert.False(body.RootElement.TryGetProperty("flags", out _));
+        Assert.False(tenant.Has("gpu_support"), "an API without flags is read as none");
+    }
+
+    [Fact]
     public async Task A_body_is_sent_with_its_length_not_chunked()
     {
         // The API, like many servers, can't read a chunked request body: it would see an empty one.

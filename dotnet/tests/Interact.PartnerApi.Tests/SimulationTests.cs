@@ -63,6 +63,21 @@ public class SimulationTests : ClientTestBase
     }
 
     [Fact]
+    public async Task What_was_ignored_comes_back_as_warnings()
+    {
+        // A tenant without GPU support: the server is kept, its GPU ignored, and said so.
+        Handler.Token().Then(HttpStatusCode.Created, SimulationJson.Replace("\"skipped\":[]",
+            "\"skipped\":[],\"warnings\":[{\"pointer\":\"/servers/0/gpu\",\"code\":\"gpu_ignored\"," +
+            "\"detail\":\"GPU support is not enabled for this tenant, so its GPU was ignored.\"}]"));
+
+        var simulation = await Client().CreateSimulationAsync(Bob, new SimulationRequest("estate_refresh", "Leeds",
+            Servers: [new ServerLine("gpu-1", "Dell", "R750xa", Gpu: "A100", GpuCount: 4, Quantity: 2)]));
+
+        var warning = Assert.Single(simulation.Warnings!);
+        Assert.Equal(("/servers/0/gpu", "gpu_ignored"), (warning.Pointer, warning.Code));
+    }
+
+    [Fact]
     public async Task Servers_not_settled_say_which_and_what_our_matcher_found()
     {
         Handler.Token().Then(HttpStatusCode.BadRequest, """

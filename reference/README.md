@@ -23,6 +23,12 @@ Every simulation uses the same assumptions: 30% server utilisation, 60% GPU util
 of 1.5, electricity at £0.25 a kWh, maintenance at £1,200 a server and licensing at £50 a core,
 in GBP. Every server is sent with its catalogue match, so none needs reviewing.
 
+**The GPU reports need GPU support.** Reports 4 and 5 are GPU simulations, and reports 3 and 6
+include 2 GPU servers. The sample switches GPU support on for its tenant if your plan includes
+it. If it doesn't, the sample leaves 4 and 5 out, and 3 and 6 are run with those servers taken
+without their GPUs (the API says so in `warnings`), so their figures won't match the expected
+ones.
+
 ## How to use them
 
 - **`inputs/`** holds each report exactly as it is sent to the API: the body of

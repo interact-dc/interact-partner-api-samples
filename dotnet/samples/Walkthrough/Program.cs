@@ -64,17 +64,10 @@ static async Task<int> Walkthrough()
         Console.WriteLine($"   Signed in as client {ping.ClientId} of partner {ping.Partner}, scopes: {string.Join(" ", ping.Scopes)}");
 
         Step(2, $"Create (or update) a tenant for one of your customers: {tenantRef}");
-        Tenant tenant;
-        try
-        {
-            tenant = await client.PutTenantAsync(tenantRef, new TenantRequest("Sample customer", ["simulations", "compliance"]));
-        }
-        catch (PartnerApiException refused) when (refused.Code == "validation_failed")
-        {
-            // Your plan doesn't include EU compliance: the walkthrough leaves those steps out.
-            tenant = await client.PutTenantAsync(tenantRef, new TenantRequest("Sample customer", ["simulations"]));
-        }
+        // Without EU compliance in your plan, the walkthrough leaves those steps out.
+        var tenant = await TenantSetup.PutAsync(client, tenantRef, "Sample customer");
         Console.WriteLine($"   {tenant.Name}: {tenant.Status}, can use {string.Join(", ", tenant.Modules.Effective)}");
+        Console.WriteLine($"   Features: {(tenant.Flags is { Effective.Count: > 0 } f ? string.Join(", ", f.Effective) : "none")}");
 
         Step(3, "Give the tenant credits from your pool, as many as it is short of");
         // The run below costs one credit, and the compliance run one more.
@@ -170,6 +163,8 @@ static async Task<int> Walkthrough()
         var simulation = await client.CreateSimulationAsync(user, new SimulationRequest(
             "estate_refresh", "Sample estate refresh", settled, targets));
         Console.WriteLine($"   Created {simulation.Id}: {simulation.Status}, {simulation.Servers.Matched} servers matched");
+        // Taken but ignored, such as GPUs for a tenant without GPU support: worth telling your user.
+        foreach (var warning in simulation.Warnings ?? []) Console.WriteLine($"   Ignored {warning.Pointer}: {warning.Detail}");
 
         Step(10, "Run it, waiting for the result");
         var run = await client.StartRunAsync(user, simulation.Id, waitSeconds: 10);
