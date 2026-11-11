@@ -3,7 +3,7 @@
 What changed in these samples, newest first. If you copied the C# library into your own system,
 check **Breaking** first: those are the changes your code may need.
 
-## Unreleased
+## 2026-11-11
 
 ### Breaking
 
